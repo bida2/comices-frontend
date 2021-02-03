@@ -1,0 +1,202 @@
+// Main SCSS variables 
+
+// Mixins zone
+
+// Styles start here
+
+
+.comics-margin {
+    margin: {
+        left: 1.6rem;
+    };
+}
+
+.select-max-width {
+    max-width: 200px;
+}
+
+
+.border-solid-2px {
+    border: 2px solid #1976d2;
+}
+
+
+.justify-flex-space-evenly {
+    justify-content: space-evenly;
+}
+
+.black-background-70-opacity {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+
+.position-absolute {
+    position: absolute !important;
+}
+
+.absolute-right-align {
+    left: 82%;
+}
+
+a.title-link {
+    text-decoration: none;
+    font-family: 'Reem Kufi', sans-serif;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+.no-deco-link {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+.grey-card-like-text {
+    color: rgba(0, 0, 0, .6);
+}
+
+.no-deco-wo-hover {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.flex-basis-33 {
+    flex: {
+        basis: 33.3333% !important;
+    }
+}
+
+
+
+
+.announce-title {
+    text-decoration: none;
+}
+
+.custom-flex-shrink {
+    -webkit-box-flex: 0 !important;
+    flex-grow: 0.15 !important;
+    flex-shrink: 1 !important;
+}
+
+.override-active-link {
+    &:before {
+        opacity: 0;
+        background-color: transparent;
+    }
+
+    &:hover:before {
+        background-color: rgba(255, 255, 255, 0.24);
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1)
+    }
+}
+
+
+
+
+// Share buttons styles
+ul.share-buttons {
+    list-style: none;
+    padding: 0;
+}
+
+ul.share-buttons li {
+    display: inline;
+}
+
+ul.share-buttons .sr-only {
+    position: absolute;
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+    padding: 0;
+    border: 0;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+}
+
+
+// By breakpoint - CSS rules
+// Vuetify Breakpoints CSS rules
+
+// xs
+@media screen and (max-width: 600px) {
+
+    .position-absolute {
+        display: none !important;
+    }
+
+    .absolute-right-align {
+        left: auto;
+    }
+
+    .height-progress-loader {
+        height: 85vh !important;
+    }
+
+}
+
+// sm 
+@media screen and (min-width: 601px) and (max-width: 960px) {
+
+    .position-absolute {
+        display: none !important;
+    }
+
+    .absolute-right-align {
+        left: auto;
+    }
+
+}
+
+// md 
+@media screen and (min-width: 961px) and (max-width: 1264px) {
+
+    .position-absolute {
+        display: none !important;
+    }
+
+    .absolute-right-align {
+        left: auto;
+    }
+
+}
+
+// lg 
+@media screen and (min-width: 1265px) and (max-width: 1904px) {
+
+    .position-absolute {
+        position: absolute !important;
+    }
+
+    .announce-title-size {
+        font-size: 14px;
+    }
+
+    .announce-subtitle-size {
+        font-size: 12px;
+    }
+
+
+    .absolute-right-align {
+        left: 85%;
+    }
+
+}
+
+// xl
+@media screen and (min-width: 1905px) {
+    .share-buttons-left-padding {
+        padding-left: 104px !important;
+    }
+
+}
+
+// Announcement card is to be displayed only on LG and XL screens
