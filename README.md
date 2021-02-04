@@ -13,3 +13,15 @@ After the dependencies have been set up, run the command below to start the app 
 ```
 npm run serve
 ```
+
+This project uses Okta for authorization - in order to use it properly, you need to provide a `okta.js` file in the `src` folder.
+This file must contain the following:
+```
+var oktaDetails = {
+	issuer: <your okta issuer URL>,
+	client_id: <your okta client id>,
+	redirect_uri: window.location.origin + '/implicit/callback',
+	scopes: <your desired okta scopes>
+}
+export default oktaDetails;
+```
