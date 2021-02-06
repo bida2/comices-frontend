@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/30/2020 -->
 <template>
     <div class="editPost">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="review != null && review != undefined">
            <Notifications></Notifications>
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -21,6 +21,7 @@
 import eventHub from '@/main.js'
 import FormatToolbar from '@/components/FormatToolbar.vue'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, descLength } from '@/validations.js'
 export default {
@@ -41,7 +42,6 @@ export default {
     methods: {
         submitReview(headers) {
             if (!this.$refs.editreviewform.validate()) {
-               // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -55,7 +55,6 @@ export default {
                 .then(function(response) {
                     return response.text()
                 }).then(function(jsonResponse) {
-                    //this.toggleAlert(jsonResponse);
                     eventHub.$emit("notifyUser", jsonResponse);
                     if (jsonResponse != "Review title or review content is empty!")
                         this.$router.go(-1);
@@ -73,6 +72,15 @@ export default {
             else this.review.reviewContent = updatedText;
         });
     },
+    watch: {
+        review() {
+            if (this.review) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the review!");
+            }
+        }
+    },
     mounted: async function() {
         this.review = await getResourceJson('http://localhost:8080/getReview?rId=' + this.$route.query.rId);
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -82,7 +90,8 @@ export default {
     },
     components: {
         'Notifications': Notifications,
-        'FormatToolbar': FormatToolbar
+        'FormatToolbar': FormatToolbar,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

@@ -1,8 +1,6 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="addComicReview">
         <v-container>
-           <!-- v-snackbar-based notifications - can be multiple v-snackbars instead of just one -->
             <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -64,7 +62,6 @@ export default {
         addComicReview(headers) {
             if (!this.$refs.addreviewform.validate()) {
                 eventHub.$emit('notifyUser', 'Data is missing or in an incorrect format! Please review your entered data and try again!');
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             if (this.accessTokenDecoded !== null && this.accessTokenDecoded.groups.includes('admins')) {
@@ -83,7 +80,6 @@ export default {
                         eventHub.$emit('notifyUser', message);
                     }.bind(this))
             } else {
-                //this.toggleAlert("Access denied! Cannot submit new comic!");
                 eventHub.$emit('notifyUser', "Access denied! Cannot submit new comic!");
             }
 

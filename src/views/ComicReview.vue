@@ -1,8 +1,9 @@
 <!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="reviews">
-        <v-container fluid class="text-center my-1">
-           <Notifications></Notifications>
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-1" v-if="review != null & review != undefined">
+            <Notifications></Notifications>
             <v-layout row wrap>
                 <v-row class="mb-xl-3">
                     <v-col cols="12" md="6" lg="8" xl="12">
@@ -11,7 +12,8 @@
                         <p id="content-field" class="mt-xl-3" v-html="review.reviewContent"></p>
                         <iframe v-if="review.videoURL" width="560" height="315" :src="review.videoURL" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         <div class="mt-xl-6"><span class="primary--text">Reviewer Score</span>
-                        <v-rating v-model="review.revScore" readonly color="primary"></v-rating></div>
+                            <v-rating v-model="review.revScore" readonly color="primary"></v-rating>
+                        </div>
                         <h4 class="text-center primary--text font-weight-bold mt-xl-8 pa-xl-3">Did you like this review? Vote below!</h4>
                         <v-btn @click="giveThumbs('Up', review.reviewId, headers)" icon>
                             <v-icon>mdi-thumb-up</v-icon>
@@ -30,10 +32,11 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        review: {},
+        review: null,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -47,6 +50,15 @@ export default {
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
+    watch: {
+        review() {
+            if (this.review) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comic review!");
+            }
+        }
+    },
     methods: {
         giveThumbs(ratingType, rId, headers) {
             fetch('http://localhost:8080/rateReview?u=' + this.loggedInUser.sub + '&rId=' + rId + "&r=" + ratingType, {
@@ -59,13 +71,13 @@ export default {
                 })
                 .then(async function(message) {
                     this.review = await getResourceJson('http://localhost:8080/getReview?rId=' + this.$route.query.rId);
-                  //  this.toggleAlert(message);
-                  eventHub.$emit("notifyUser", message);
+                    eventHub.$emit("notifyUser", message);
                 }.bind(this))
         },
     },
     components: {
-        "Notifications": Notifications
+        "Notifications": Notifications,
+        "StatusAlerts": StatusAlerts
     }
 }
 </script>

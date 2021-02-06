@@ -1,9 +1,8 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/30/2020 -->
 <template>
     <div class="editComic">
-        <!-- Remove what is necessary but basically re-use a good chunk of the code here. the below code is a good start -->
-        <v-container>
-        <Notifications></Notifications>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="article != null & article != undefined">
+            <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
                     <h3 class="text-center primary--text mt-xl-5 font-weight-light">Edit News Article</h3>
@@ -27,11 +26,12 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, descLength } from '@/validations.js'
 export default {
     data: () => ({
-        article: {},
+        article: null,
         valid: false,
         headers: new Headers(),
         csrfToken: '',
@@ -45,7 +45,6 @@ export default {
     methods: {
         submitArticle(headers) {
             if (!this.$refs.editnewsarticle.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -61,12 +60,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                     }.bind(this))
             } else {
-                //this.toggleAlert("Access denied! Cannot submit edits to a comic!");
-                 eventHub.$emit("notifyUser", "Access denied! Cannot submit edits to a comic!");
+                eventHub.$emit("notifyUser", "Access denied! Cannot submit edits to a comic!");
             }
 
         }
@@ -77,6 +74,15 @@ export default {
             this.accessTokenDecoded = null;
         }.bind(this))
     },
+    watch: {
+        article() {
+            if (this.article) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the article!");
+            }
+        }
+    },
     mounted: async function() {
         this.article = await getResourceJson('http://localhost:8080/getNewsArticle?aId=' + this.$route.query.aId);
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -85,7 +91,8 @@ export default {
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
     components: {
-        'Notifications': Notifications
+        'Notifications': Notifications,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

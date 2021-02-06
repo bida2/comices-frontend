@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/29/2020 -->
 <template>
     <div class="comicSummary">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="comic != null && comic != undefined">
             <Notifications></Notifications>
             <v-row no-gutters class="d-flex justify-center text-center">
                 <v-col cols="12" md="6" lg="6" xl="4">
@@ -102,6 +102,7 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import BarChart from '@/components/BarChart.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import Router from 'vue-router'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, commenterNameLength } from '@/validations.js'
@@ -111,7 +112,7 @@ export default {
             name: '',
             content: ''
         },
-        comic: {},
+        comic: null,
         comicRating: {
             rating: 0
         },
@@ -181,9 +182,19 @@ export default {
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
         this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.$route.query.cId);
     },
+     watch: {
+        comic() {
+            if (this.comic) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comic!");
+            }
+        }
+    },
     components: {
         "Notifications": Notifications,
-        'BarChart': BarChart
+        'BarChart': BarChart,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

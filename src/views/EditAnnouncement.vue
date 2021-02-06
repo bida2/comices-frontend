@@ -1,9 +1,8 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/30/2020 -->
 <template>
     <div id="my-cont" class="editAnnouncement">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="announcement != null && announcement != undefined">
             <Notifications></Notifications>
-            <!-- Here we need to insert a toolbar where we will hold our different tools that will format the text-->
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -22,6 +21,7 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import FormatToolbar from '@/components/FormatToolbar.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, descLength } from '@/validations.js'
 export default {
@@ -71,6 +71,15 @@ export default {
             else this.announcement.annContent = updatedText;
         });
     },
+       watch: {
+        announcement() {
+            if (this.announcement) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the files!");
+            }
+        }
+    },
     mounted: async function() {
         this.announcement = await getResourceJson('http://localhost:8080/getAnnouncement?aId=' + this.$route.query.aId);
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -80,7 +89,8 @@ export default {
     },
     components: {
         'Notifications': Notifications,
-        'FormatToolbar': FormatToolbar
+        'FormatToolbar': FormatToolbar,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

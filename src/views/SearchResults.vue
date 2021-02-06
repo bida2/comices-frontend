@@ -1,8 +1,8 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="searchResults">
-        <h3 class="text-center primary--text  font-weight-light">Search Results for "{{$route.query.f}}"</h3>
-        <v-container fluid class="text-center my-5">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="comics != null && comics != undefined">
+            <h3 class="text-center primary--text  font-weight-light">Search Results for "{{$route.query.f}}"</h3>
             <Notifications></Notifications>
             <ShareDialog></ShareDialog>
             <v-layout row wrap class="justify-flex-space-evenly">
@@ -12,8 +12,6 @@
                             <v-row>
                                 <v-col>
                                     <v-flex class="text-center" xs12>
-                                        <!-- later on names here need to dynamically generated from the data we pull
-                                      through the fetch api -->
                                         <router-link class="blue--text text--darken-4 title-link" :to="'/summary?cId=' + comic.comicId"> {{ comic.comicName }} </router-link>
                                     </v-flex>
                                 </v-col>
@@ -60,11 +58,12 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import ShareDialog from '@/components/ShareDialog.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, setUserToken, getResourceJson } from '@/common.js'
 import { mdiShareVariant } from '@mdi/js'
 export default {
     data: () => ({
-        comics: [],
+        comics: null,
         loading: true,
         loaded: false,
         announceCard: true,
@@ -84,24 +83,29 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading
+        readyHandler();
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
     },
     watch: {
+        comics() {
+            if (this.comics) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the search results!");
+            }
+        },
         async '$route'() {
             this.comics = await getResourceJson('http://localhost:8080/searchComic?f=' + this.$route.query.f)
             if (this.comics.length == 0)
-                //this.toggleAlert('No comics available for search query!');
                 eventHub.$emit("notifyUser", 'No comics available for search query!');
         }
     },
     mounted: async function() {
         this.comics = await getResourceJson('http://localhost:8080/searchComic?f=' + this.$route.query.f)
         if (this.comics.length == 0)
-            // this.toggleAlert('No comics available for search query!');
             eventHub.$emit("notifyUser", 'No comics available for search query!');
         this.headers = new Headers({
             'X-XSRF-TOKEN': getToken()
@@ -126,11 +130,9 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message)
                         eventHub.$emit("notifyUser", message);
                     }.bind(this))
             } else {
-                //this.toggleAlert("You are not currently logged-in!")
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },
@@ -146,12 +148,10 @@ export default {
                         return response.text()
                     })
                     .then(async function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.comics = await getResourceJson('http://localhost:8080/searchComic?f=' + this.$route.query.f)
                     }.bind(this))
             } else {
-                //this.toggleAlert("Cannot delete comic!")
                 eventHub.$emit("notifyUser", "Cannot delete comic!");
             }
         },
@@ -161,7 +161,8 @@ export default {
     },
     components: {
         'Notifications': Notifications,
-        'ShareDialog': ShareDialog
+        'ShareDialog': ShareDialog,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

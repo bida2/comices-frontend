@@ -1,13 +1,12 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="requestReview">
         <v-container class="text-center">
             <StatusAlerts></StatusAlerts>
-           <Notifications></Notifications>
+            <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && loading === false" justify="center">
                 <v-col cols="12" md="6" xl="4">
                     <h3 class="text-center primary--text mt-xl-5 font-weight-light">Request A Comic Review</h3>
-                    <v-form  id="comic-form" @submit.prevent="submitComic(headers)" ref="requestreviewform" class="text-center" v-model="valid">
+                    <v-form id="comic-form" @submit.prevent="submitComic(headers)" ref="requestreviewform" class="text-center" v-model="valid">
                         <v-text-field :rules="comicNameRules" name="comicName" label="Comic Name" required></v-text-field>
                         <v-text-field :rules="urlRules" name="comicSummaryURL" label="Link To Comic Summary" required></v-text-field>
                         <v-text-field :rules="urlRules" name="comicCoverURL" label="Link To Comic Cover" required></v-text-field>
@@ -59,7 +58,6 @@ export default {
     methods: {
         submitComic(headers) {
             if (!this.$refs.requestreviewform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -75,12 +73,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.$refs.requestreviewform.reset();
                     }.bind(this))
             } else {
-                //this.toggleAlert("Access denied! Cannot request a comic review!");
                 eventHub.$emit("notifyUser", "Access denied! Cannot request a comic review!");
             }
 
@@ -97,7 +93,7 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading
+        readyHandler();
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;

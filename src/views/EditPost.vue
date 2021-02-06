@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/30/2020 -->
 <template>
     <div class="editPost">
-        <v-container>
+         <StatusAlerts></StatusAlerts>
+        <v-container v-if="post != null && post != undefined">
             <Notifications></Notifications>
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -21,6 +21,7 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import FormatToolbar from '@/components/FormatToolbar.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, postLength } from '@/validations.js'
 export default {
@@ -68,6 +69,15 @@ export default {
             else this.post.postContent = updatedText;
         });
     },
+    watch: {
+        post() {
+            if (this.post) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the post!");
+            }
+        }
+    },
     mounted: async function() {
         this.post = await getResourceJson('http://localhost:8080/getPost?pId=' + this.$route.query.pId);
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -77,7 +87,8 @@ export default {
     },
     components: {
         'Notifications': Notifications,
-        'FormatToolbar': FormatToolbar
+        'FormatToolbar': FormatToolbar,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

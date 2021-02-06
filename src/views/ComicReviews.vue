@@ -1,7 +1,8 @@
 <!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="reviews">
-        <v-container fluid class="text-center my-1">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-1" v-if="reviews != null && reviews != undefined">
             <AnnouncementDialog></AnnouncementDialog>
             <h2 class="text-center primary--text font-weight-light mb-xl-8">Reviews</h2>
             <div v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" class="text-left mb-xl-0 ml-xl-9">
@@ -51,10 +52,11 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import AnnouncementDialog from '@/components/AnnouncementDialog.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getDecodedAccessToken, getEncodedAccessToken, getToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        reviews: [],
+        reviews: null,
         loading: true,
         accessTokenEncoded: null,
         accessTokenDecoded: null,
@@ -74,6 +76,15 @@ export default {
         };
         document.addEventListener('readystatechange', readyHandler);
         readyHandler();
+    },
+    watch: {
+        reviews() {
+            if (this.reviews) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comic review!");
+            }
+        }
     },
     methods: {
         deleteReview(headers, reviewId) {
@@ -122,14 +133,11 @@ export default {
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
         this.truncContent(10, 10);
-        // Below code fires after the DOM is ready but BEFORE ANYTHING HAS BEEN RENDERED
-        //this.$nextTick(function() {
-        // this.checkReviews();
-        //}.bind(this))
     },
     components: {
         'Notifications': Notifications,
-        'AnnouncementDialog': AnnouncementDialog
+        'AnnouncementDialog': AnnouncementDialog,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

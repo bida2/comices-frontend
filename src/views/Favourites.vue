@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="profile">
         <h3 class="text-center primary--text font-weight-light">Favourite Comics</h3>
@@ -7,16 +6,6 @@
             <StatusAlerts></StatusAlerts>
             <ShareDialog></ShareDialog>
             <v-layout row wrap class="justify-flex-space-evenly">
-                <!-- <v-row justify="center" cols="5" xl="3" class="left-margin-without-first" v-if="favourites.length === 0 && loading === true">
-                    <v-alert type="info">
-                        Loading favourite comics....
-                    </v-alert>
-                </v-row>
-                <v-row justify="center" cols="5" xl="3" class="left-margin-without-first" v-if="noFavourites">
-                    <v-alert type="info">
-                        No favourited comics! <br> Visit the Upcoming page or Classics page to find comics!
-                    </v-alert>
-                </v-row> -->
                 <v-flex xs5 lg3 xl2 class="left-margin-without-first" v-for="comic in favourites" :key="comic.comicId">
                     <v-skeleton-loader :loading="!loaded" transition="slide-x-transition" type="card">
                         <v-card max-width="344" v-show="loaded">
@@ -75,9 +64,7 @@ import { mdiShareVariant } from '@mdi/js'
 export default {
     data: () => ({
         favourites: [],
-        //  loading: true,
         loaded: false,
-        //  noFavourites: false,
         accessTokenEncoded: '',
         headers: new Headers(),
         loggedInUser: '',
@@ -89,7 +76,6 @@ export default {
         const readyHandler = () => {
             if (document.readyState == 'complete') {
                 setTimeout(function() {
-                    // this.loading = false;
                     this.loaded = true;
                 }.bind(this), 1000)
                 document.removeEventListener('readystatechange', readyHandler);
@@ -115,8 +101,6 @@ export default {
     mounted: async function() {
         this.loggedInUser = await this.$auth.getUser();
         this.favourites = await getResourceJson('http://localhost:8080/getFavourites?u=' + this.loggedInUser.sub);
-        // if (this.favourites.length === 0)
-        //   this.loading = false;
         this.headers.append('X-XSRF-TOKEN', getToken());
         this.accessTokenEncoded = await getEncodedAccessToken();
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
@@ -143,8 +127,6 @@ export default {
          openShareDialog(comicId) {
             eventHub.$emit("toggleShareDialog", this.favourites.filter(comic => comic.comicId === comicId)[0]);
         },
-        // Add a check for checking if there is a logged in user - if not show a message that the app cannot identify the user
-        // Do this for all pages that allow removing favourite comics
         removeFavourite(comicId, headers) {
             fetch('http://localhost:8080/removeFavourite?u=' + this.loggedInUser.sub + '&cId=' + comicId, {
                     method: 'DELETE',
@@ -156,7 +138,6 @@ export default {
                 }.bind(this))
                 .then(async function(message) {
                     this.favourites = await getResourceJson('http://localhost:8080/getFavourites?u=' + this.loggedInUser.sub);
-                   // this.toggleAlert(message);
                     eventHub.$emit("notifyUser", message);
                 }.bind(this))
         }

@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/29/2020 -->
 <template>
     <div class="contact">
         <h3 class="text-center primary--text  font-weight-light">Contact Us!</h3>
@@ -37,7 +36,6 @@ export default {
         headers: new Headers(),
         loggedInUser: null,
         accessTokenEncoded: '',
-        //  userRetrieved: false,
         valid: false,
         topicRules: [
             notEmpty,
@@ -57,7 +55,6 @@ export default {
     methods: {
         submitServer() {
             if (!this.$refs.contactform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -73,12 +70,10 @@ export default {
                         return response.text();
                     }.bind(this))
                     .then(function(decResponse) {
-                       // this.toggleAlert(decResponse);
                        eventHub.$emit("notifyUser", decResponse);
                         this.$refs.contactform.reset()
                     }.bind(this))
                     .catch(e => {
-                        //this.toggleAlert(e);
                         eventHub.$emit("notifyUser", e);
                         this.$refs.contactform.reset();
                     })
@@ -89,7 +84,6 @@ export default {
     created: async function() {
         this.accessTokenEncoded = await getEncodedAccessToken();
         this.loggedInUser = await this.$auth.getUser();
-        // this.userRetrieved = true;
         // second param is related to is page loading - user is retrieved so its not loading
         // third param is related to user status - if we pass null, then everything is fine, otherwise pass 'no user' or something like that
         // fourth param is the message we sent to the component - include null if we want no message

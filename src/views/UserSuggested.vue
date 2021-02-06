@@ -1,10 +1,9 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="userSuggested">
-        <h3 class="text-center primary--text font-weight-light">Comics You Suggested</h3>
-        <v-container fluid class="text-center my-5">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="suggestedComics != null && suggestedComics != undefined">
+            <h3 class="text-center primary--text font-weight-light" v-show="suggestedComics.length > 0">Comics You Suggested</h3>
            <Notifications></Notifications>
-            <StatusAlerts></StatusAlerts>
             <v-layout row wrap>
             <v-card v-for="comic in suggestedComics" :key="comic.comicId" class="mx-auto" max-width="300">
                 <v-hover v-slot="{ hover }">
@@ -51,9 +50,7 @@ import Notifications from '@/components/Notifications.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken } from '@/common.js'
 export default {
     data: () => ({
-        suggestedComics: [],
-        //loading: true,
-       // loaded: false,
+        suggestedComics: null,
         accessTokenEncoded: '',
         headers: new Headers(),
         loggedInUser: '',
@@ -61,17 +58,6 @@ export default {
         accessTokenDecoded: null,
     }),
     created: async function() {
-       /* const readyHandler = () => {
-            if (document.readyState == 'complete') {
-                setTimeout(function() {
-                    this.loading = false;
-                    this.loaded = true;
-                }.bind(this), 1000)
-                document.removeEventListener('readystatechange', readyHandler);
-            }
-        };
-        document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading */
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
@@ -87,10 +73,12 @@ export default {
     },
     watch: {
         suggestedComics() {
-            if (this.suggestedComics.length > 0 && document.readyState === "complete") {
+            if (this.suggestedComics && this.suggestedComics.length > 0) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
-            } else if (this.suggestedComics.length === 0 && document.readyState === "complete") {
+            } else if (this.suggestedComics && this.suggestedComics.length === 0) {
                 eventHub.$emit('changeStatusAlert', false, null, "No suggested comics! Visit the \"Suggest a Comic\" page in the sidebar!");
+            } else if (this.suggestedComics == null || this.suggestedComics == undefined) {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the suggested comics!");
             }
         }
     },
@@ -122,12 +110,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.getSuggestedComics(this.headers);
                     }.bind(this))
             } else {
-                //this.toggleAlert("You are not currently logged-in!");
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },
@@ -142,12 +128,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                       // this.toggleAlert(message);
                        eventHub.$emit("notifyUser", message);
                         this.getSuggestedComics(this.headers);
                     }.bind(this))
             } else {
-                //this.toggleAlert("You are not currently logged-in!");
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },

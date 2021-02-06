@@ -71,12 +71,10 @@ export default {
     methods: {
         submitFiles(headers) {
             if (!this.$refs.filesuploadform.validate()) {
-               // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             const formElement = document.getElementById('files-form');
-           // this.toggleAlert("File(s) currently uploading...");
            eventHub.$emit("notifyUser", "File(s) currently uploading...");
             fetch('http://localhost:8080/uploadFiles', {
                     method: 'POST',
@@ -87,18 +85,15 @@ export default {
                 .then(function(response) {
                     return response.text();
                 }).then(function(response) {
-                  //  this.toggleAlert(response);
                   eventHub.$emit("notifyUser", response);
                 }.bind(this))
         },
         submitFilesImgBb(headers) {
             if (!this.$refs.imgbbform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                  eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             const formElement = document.getElementById('files-form-imgbb');
-           // this.toggleAlert("File(s) currently uploading...");
             eventHub.$emit("notifyUser", "File(s) currently uploading...");
             fetch('http://localhost:8080/uploadToImgBb', {
                     method: 'POST',
@@ -118,18 +113,15 @@ export default {
                         this.message = "Could not upload image to ImgBB servers! Try again later!";
                     } else
                         this.message = jsonResponse;
-                   // this.toggleAlert(this.message);
                     eventHub.$emit("notifyUser", this.message);
                 }.bind(this))
         },
         submitFilesFileIo(headers) {
             if (!this.$refs.fileioform.validate()) {
-               // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             const formElement = document.getElementById('files-form-fileio');
-            //this.toggleAlert("File(s) currently uploading...");
             eventHub.$emit("notifyUser", "File(s) currently uploading...");
             fetch('http://localhost:8080/uploadFileio', {
                     method: 'POST',
@@ -149,18 +141,15 @@ export default {
                         this.message = "Could not upload image to FileIo servers! Try again later!";
                     } else
                         this.message = finalResponse;
-                   // this.toggleAlert(this.message);
                    eventHub.$emit("notifyUser", this.message);
                 }.bind(this))
         },
         submitFilesStreamable(headers) {
              if (!this.$refs.streamableform.validate()) {
-               // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             const formElement = document.getElementById('files-form-streamable');
-            //this.toggleAlert("File(s) currently uploading...");
              eventHub.$emit("notifyUser", "File(s) currently uploading...");
             fetch('http://localhost:8080/uploadStreamable', {
                     method: 'POST',
@@ -179,7 +168,6 @@ export default {
                     } else if (typeof jsonResponse === "object" && jsonResponse.status !== 1) {
                         this.message = "Could not upload video to Streamable servers! Try again later!";
                     } else this.message = jsonResponse;
-                    //this.toggleAlert(this.message);
                      eventHub.$emit("notifyUser", this.message);
                 }.bind(this))
         },

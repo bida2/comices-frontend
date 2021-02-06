@@ -1,11 +1,10 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/29/2020 -->
 <template>
     <div class="comics">
-        <h3 class="text-center primary--text  font-weight-light">{{ currSelected }} Comics</h3>
-        <v-container fluid class="text-center">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center" v-if="comics != null && comics != undefined">
+            <h3 class="text-center primary--text  font-weight-light">{{ currSelected }} Comics</h3>
             <AnnouncementDialog></AnnouncementDialog>
             <ShareDialog></ShareDialog>
-            <!-- v-snackbar-based notifications - can be multiple v-snackbars instead of just one -->
             <Notifications></Notifications>
             <v-row>
                 <v-col cols="4" md="2" xl="1">
@@ -21,15 +20,12 @@
                 </v-col>
             </v-row>
             <v-layout row wrap class="justify-flex-space-evenly">
-                <!-- Need to do a v-for on the v-flex later to dynamically generate contents - also do a ml-X class for a left margin-->
                 <v-flex xs12 lg3 xl2 class="comics-margin" v-for="comic in comics" :key="comic.comicId">
                     <v-skeleton-loader :loading="loading" transition="slide-x-transition" type="card">
                         <v-card max-width="344" v-show="!loading">
                             <v-row>
                                 <v-col>
                                     <v-flex class="text-center" xs12>
-                                        <!-- later on names here need to dynamically generated from the data we pull
-                                      through the fetch api -->
                                         <router-link class="blue--text text--darken-4 title-link" :to="'/summary?cId=' + comic.comicId"> {{ comic.comicName }} </router-link>
                                     </v-flex>
                                 </v-col>
@@ -77,6 +73,7 @@ import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import AnnouncementDialog from '@/components/AnnouncementDialog.vue'
 import ShareDialog from '@/components/ShareDialog.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, setUserToken, getResourceJson } from '@/common.js'
 import { mdiShareVariant } from '@mdi/js'
 export default {
@@ -84,7 +81,7 @@ export default {
         defValue: 'Upcoming',
         currSelected: 'Upcoming',
         comicTypes: ['Upcoming', 'Released', 'Classic'],
-        comics: [],
+        comics: null,
         loading: true,
         loaded: false,
         accessTokenEncoded: '',
@@ -97,7 +94,8 @@ export default {
     components: {
         'Notifications': Notifications,
         'AnnouncementDialog': AnnouncementDialog,
-        'ShareDialog': ShareDialog
+        'ShareDialog': ShareDialog,
+        'StatusAlerts': StatusAlerts
     },
     created: async function() {
         const readyHandler = () => {
@@ -124,6 +122,15 @@ export default {
         await this.refreshAccessToken()
         this.headers = setUserToken(this.headers, this.accessTokenEncoded)
         this.loggedInUser = await this.$auth.getUser();
+    },
+    watch: {
+        comics() {
+            if (this.comics) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comics!");
+            }
+        }
     },
     methods: {
         async refreshAccessToken() {

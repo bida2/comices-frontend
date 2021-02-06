@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="allReviewRequests">
         <h3 class="text-center primary--text font-weight-light">Comic Review Requests</h3>
@@ -9,8 +8,6 @@
                 <v-flex xs5 lg3 xl2 class="comics-margin" v-for="reviewRequest in reviewRequests" :key="reviewRequest.requestId">
                     <v-row>
                         <v-col>
-                            <!-- This needs to be revised heavily to look good and add functionality for approving it 
-                            if the user has admin rights -->
                             <v-flex class="text-center" xs12>
                                 <v-card max-width="344" v-show="loaded">
                                     <v-row>
@@ -33,7 +30,6 @@
                                         <v-col class="text-center">
                                             <v-container class="pa-0">
                                                 <v-row>
-                                                    <!-- Functions need to replaced and reworked below - we need a function to respond to a contact message at least and to ignore a contact message as (delete it on backend) -->
                                                     <v-col v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')">
                                                         <v-btn @click="removeReviewRequest(reviewRequest.requestId, headers)" icon>
                                                             <v-icon>mdi-close-circle</v-icon>
@@ -65,7 +61,6 @@ import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson
 export default {
     data: () => ({
         reviewRequests: [],
-        // loading: true,
         loaded: false,
         accessTokenEncoded: '',
         headers: new Headers(),
@@ -77,7 +72,6 @@ export default {
         const readyHandler = () => {
             if (document.readyState == 'complete') {
                 setTimeout(function() {
-                    // this.loading = false;
                     this.loaded = true;
                 }.bind(this), 1000)
                 document.removeEventListener('readystatechange', readyHandler);
@@ -126,12 +120,10 @@ export default {
                         return response.text()
                     })
                     .then(async function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.reviewRequests = await getResourceJson('http://localhost:8080/getReviewRequests');
                     }.bind(this))
             } else {
-                // this.toggleAlert("You are not currently logged-in!")
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },

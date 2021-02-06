@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/30/2020 -->
 <template>
     <div class="suggestComic">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="suggestion != null && suggestion != undefined">
          <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -38,6 +38,7 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { onlyLetters, notEmpty, validUrl, comicBookName } from '@/validations.js'
 export default {
@@ -70,7 +71,6 @@ export default {
     methods: {
         submitComic(headers) {
              if (!this.$refs.editsuggestionform.validate()) {
-               // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             } 
@@ -86,14 +86,21 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                     }.bind(this))
             } else {
-                //this.toggleAlert("Access denied! Cannot edit comic suggestion!");
                 eventHub.$emit("notifyUser", "Access denied! Cannot edit comic suggestion!");
             }
 
+        }
+    },
+     watch: {
+        suggestion() {
+            if (this.suggestion) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the suggested comic!");
+            }
         }
     },
     created: async function() {
@@ -110,7 +117,8 @@ export default {
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
     components: {
-        'Notifications': Notifications
+        'Notifications': Notifications,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

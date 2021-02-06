@@ -1,24 +1,24 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="forumPost">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="posts != null && posts != undefined">
             <Notifications></Notifications>
             <v-row>
                 <v-col v-if="posts[0].status != 400" cols="12" md="6" lg="12" xl="12">
                     <v-card v-for="post in posts" :key="post.postId" class="mx-auto my-xl-2" max-width="600" outlined>
                         <v-skeleton-loader :loading="!fullyLoaded" transition="slide-x-transition" type="list-item-three-line">
                             <v-list-item three-line v-show="fullyLoaded">
-                            <v-list-item-content>
-                                <v-list-item-title class="post-title headline mb-1" v-html="post.postTitle">
-                                </v-list-item-title>
-                                <v-list-item-subtitle>Posted on {{ post.postDateTimeFormatted }}</v-list-item-subtitle>
-                                <p class="my-xl-2 post-content" v-html="post.postContent"></p>
-                                <div v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" class="text-right">
-                                    <v-btn text max-width="120" @click="deletePost(post.postId, headers)" color="error">Delete Post</v-btn>
-                                    <v-btn text max-width="120" :to="'/editPost?pId=' + post.postId" color="primary">Edit Post</v-btn>
-                                </div>
-                            </v-list-item-content>
-                        </v-list-item>
+                                <v-list-item-content>
+                                    <v-list-item-title class="post-title headline mb-1" v-html="post.postTitle">
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>Posted on {{ post.postDateTimeFormatted }}</v-list-item-subtitle>
+                                    <p class="my-xl-2 post-content" v-html="post.postContent"></p>
+                                    <div v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" class="text-right">
+                                        <v-btn text max-width="120" @click="deletePost(post.postId, headers)" color="error">Delete Post</v-btn>
+                                        <v-btn text max-width="120" :to="'/editPost?pId=' + post.postId" color="primary">Edit Post</v-btn>
+                                    </div>
+                                </v-list-item-content>
+                            </v-list-item>
                         </v-skeleton-loader>
                     </v-card>
                 </v-col>
@@ -46,10 +46,11 @@
 import Router from 'vue-router'
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        posts: [],
+        posts: null,
         valid: false,
         fullyLoaded: false,
         headers: new Headers(),
@@ -66,7 +67,6 @@ export default {
         },
         submitPost(headers) {
             if (!this.$refs.postform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -84,7 +84,7 @@ export default {
                         return response.json();
                     }).then(function(jsonResponse) {
                         if (typeof jsonResponse === "string")
-                           // this.toggleAlert(jsonResponse);
+                            // this.toggleAlert(jsonResponse);
                             eventHub.$emit("notifyUser", jsonResponse);
                         else this.posts = jsonResponse;
                     }.bind(this))
@@ -100,7 +100,6 @@ export default {
                     .then(function(response) {
                         return response.text()
                     }).then(async function(responseText) {
-                        //this.toggleAlert(responseText);
                         eventHub.$emit("notifyUser", responseText);
                         this.posts = await getResourceJson('http://localhost:8080/getPosts?tId=' + this.$route.query.tId);
                     }.bind(this))
@@ -109,11 +108,17 @@ export default {
     },
     watch: {
         posts() {
-             if (this.posts.length > 0) {
-                setTimeout(() => {
-                    this.fullyLoaded = true;
-                }, 1000);
+            if (this.posts) {
+                if (this.posts.length > 0) {
+                    eventHub.$emit('changeStatusAlert', false, null, null);
+                    setTimeout(() => {
+                        this.fullyLoaded = true;
+                    }, 1000);
+                }
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the post!");
             }
+
         }
     },
     created: async function() {
@@ -130,7 +135,8 @@ export default {
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
     components: {
-        'Notifications': Notifications
+        'Notifications': Notifications,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/29/2020 -->
 <template>
     <div class="userSuggested">
         <h3 class="text-center primary--text font-weight-light">User Contact Messages</h3>
@@ -9,8 +8,6 @@
                 <v-flex xs5 lg3 xl2 class="comics-margin" v-for="contactMessage in contactMessages" :key="contactMessage.contactId">
                     <v-row>
                         <v-col>
-                            <!-- This needs to be revised heavily to look good and add functionality for approving it 
-                            if the user has admin rights -->
                             <v-flex class="text-center" xs12>
                                 <v-card max-width="344">
                                     <v-row>
@@ -67,8 +64,6 @@ import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson
 export default {
     data: () => ({
         contactMessages: [],
-        // loading: true,
-        //  loaded: false,
         accessTokenEncoded: '',
         headers: new Headers(),
         loggedInUser: '',
@@ -76,17 +71,6 @@ export default {
         accessTokenDecoded: null,
     }),
     created: async function() {
-        /* const readyHandler = () => {
-             if (document.readyState == 'complete') {
-                 setTimeout(function() {
-                     this.loading = false;
-                     this.loaded = true;
-                 }.bind(this), 1000)
-                 document.removeEventListener('readystatechange', readyHandler);
-             }
-         }; */
-        //document.addEventListener('readystatechange', readyHandler);
-        //readyHandler(); // in case the component has been instantiated lately after loading
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
@@ -122,12 +106,10 @@ export default {
                         return response.text()
                     })
                     .then(async function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.contactMessages = await getResourceJsonWithHeaders('http://localhost:8080/allContacts', this.headers);
                     }.bind(this))
             } else {
-              //  this.toggleAlert("You are not currently logged-in!")
               eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },

@@ -1,8 +1,8 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="forums">
-        <v-container>
-             <Notifications></Notifications>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="threads != null && threads != undefined">
+            <Notifications></Notifications>
             <v-row>
                 <v-col cols="12" md="6" lg="12" xl="12">
                     <v-card v-for="thread in threads" :key="thread.threadId" class="mx-auto my-lg-3 my-xl-2" max-width="600" outlined>
@@ -39,10 +39,11 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        threads: [],
+        threads: null,
         fullyLoaded: false,
         headers: new Headers(),
         accessTokenEncoded: '',
@@ -59,10 +60,9 @@ export default {
                     .then(function(response) {
                         return response.text()
                     }).then(async function(responseText) {
-                        //this.toggleAlert(responseText)
                         eventHub.$emit("notifyUser", responseText);
                         this.threads = await getResourceJson('http://localhost:8080/getThreads');
-                        this.checkThreads(10,10);
+                        this.checkThreads(10, 10);
                     }.bind(this))
             }
         },
@@ -70,7 +70,7 @@ export default {
             this.$auth.loginRedirect(this.$route.fullPath);
         },
         checkThreads(contentWordLimit, titleWordLimit) {
-           // If the title of the revuew is over a chosen content word limit - truncate it to the limit, add ... at end of title
+            // If the title of the review is over a chosen content word limit - truncate it to the limit, add ... at end of title
             // If the review's content is over a chosen title word limit - truncate it to the limit, add ... at the end
             this.threads.forEach((thread) => {
                 let splitPost = thread.threadPosts[0].postContent.split(" ");
@@ -95,11 +95,17 @@ export default {
     },
     watch: {
         threads() {
-            if (this.threads.length > 0 && !this.fullyLoaded) {
-                setTimeout(() => {
-                    this.fullyLoaded = true;
-                }, 1000);
+            if (this.threads) {
+                if (this.threads.length > 0 && !this.fullyLoaded) {
+                    eventHub.$emit('changeStatusAlert', false, null, null);
+                    setTimeout(() => {
+                        this.fullyLoaded = true;
+                    }, 1000);
+                }
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, 'Something went wrong while retrieving the forum threads!');
             }
+
         }
     },
     mounted: async function() {
@@ -108,10 +114,11 @@ export default {
         this.accessTokenEncoded = await getEncodedAccessToken();
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
-        this.checkThreads(10,6);
+        this.checkThreads(10, 6);
     },
     components: {
-        'Notifications': Notifications
+        'Notifications': Notifications,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

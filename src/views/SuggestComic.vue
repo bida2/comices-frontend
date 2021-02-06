@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="suggestComic">
         <v-container>
@@ -14,7 +13,6 @@
                         <v-text-field type="number" :rules="priceRules" name="price" label="Comic Price" required></v-text-field>
                         <v-text-field name="seriesURL" :rules="urlRules" label="Series URL" required></v-text-field>
                         <v-text-field name="coverURL" :rules="urlRules" label="Comic Cover URL" required></v-text-field>
-                        <!-- No need for validation here really - the user might suggest a comic that is a classic and has come out in the past -->
                         <v-dialog ref="dialog" v-model="modal" :return-value.sync="date" persistent width="290px">
                             <template v-slot:activator="{ on }">
                                 <v-text-field v-model="date" label="Release date" name="comicReleaseDate" readonly v-on="on"></v-text-field>
@@ -85,7 +83,6 @@ export default {
     methods: {
         submitComic(headers) {
             if (!this.$refs.suggestcomicform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -101,12 +98,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.$refs.suggestcomicform.reset();
                     }.bind(this))
             } else {
-               // this.toggleAlert("Access denied! Cannot submit new comic suggestion!");
                eventHub.$emit("notifyUser", "Access denied! Cannot submit new comic suggestion!");
             }
 

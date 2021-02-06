@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="editThread">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="thread != null && thread != undefined">
             <Notifications></Notifications>
              <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -21,6 +21,7 @@
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import FormatToolbar from '@/components/FormatToolbar.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { descLength, notEmpty } from '@/validations.js'
 export default {
@@ -41,7 +42,6 @@ export default {
     methods: {
         submitThread(headers) {
             if (!this.$refs.editthreadform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -55,10 +55,18 @@ export default {
                 .then(function(response) {
                     return response.text()
                 }).then(function(jsonResponse) {
-                    //this.toggleAlert(jsonResponse);
                     eventHub.$emit("notifyUser", jsonResponse);
                 }.bind(this))
         },
+    },
+       watch: {
+        thread() {
+            if (this.thread) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the thread!");
+            }
+        }
     },
     created: async function() {
         eventHub.$on('loggedOut', function() {
@@ -80,7 +88,8 @@ export default {
     },
     components: {
         'Notifications': Notifications,
-        'FormatToolbar': FormatToolbar
+        'FormatToolbar': FormatToolbar,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

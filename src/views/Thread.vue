@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 12/1/2020 -->
 <template>
     <div class="newThread">
         <v-container>
@@ -40,7 +39,6 @@ export default {
     methods: {
         submitPost(headers) {
             if (!this.$refs.threadform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -59,7 +57,6 @@ export default {
                         if (message == 'Thread added successfully!') {
                             this.$router.push("/forums")
                         } else {
-                            //this.toggleAlert(message);
                             eventHub.$emit("notifyUser", message);
                         }
                     }.bind(this))

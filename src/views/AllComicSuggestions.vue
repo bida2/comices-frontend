@@ -1,4 +1,3 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="userSuggested">
         <h3 class="text-center primary--text font-weight-light">Comics You Suggested</h3>
@@ -52,8 +51,6 @@ import { getToken, getEncodedAccessToken, getDecodedAccessToken } from '@/common
 export default {
     data: () => ({
         suggestedComics: [],
-        //loading: true,
-       // loaded: false,
         accessTokenEncoded: '',
         headers: new Headers(),
         loggedInUser: '',
@@ -61,17 +58,6 @@ export default {
         accessTokenDecoded: null,
     }),
     created: async function() {
-       /* const readyHandler = () => {
-            if (document.readyState == 'complete') {
-                setTimeout(function() {
-                    this.loading = false;
-                    this.loaded = true;
-                }.bind(this), 1000)
-                document.removeEventListener('readystatechange', readyHandler);
-            }
-        };
-        document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading */
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
@@ -96,8 +82,8 @@ export default {
     },
     methods: {
         async getUserAndFavourites() {
-            this.loggedInUser = await this.$auth.getUser()
-            this.getSuggestedComics(this.headers)
+            this.loggedInUser = await this.$auth.getUser();
+            this.getSuggestedComics(this.headers);
         },
         getSuggestedComics(headers) {
             fetch('http://localhost:8080/getAllSuggestions', {
@@ -122,12 +108,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit("notifyUser", message);
                         this.getSuggestedComics(this.headers);
                     }.bind(this))
             } else {
-                //this.toggleAlert("You are not currently logged-in!");
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },
@@ -142,12 +126,10 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                       // this.toggleAlert(message);
                        eventHub.$emit("notifyUser", message);
                         this.getSuggestedComics(this.headers);
                     }.bind(this))
             } else {
-                //this.toggleAlert("You are not currently logged-in!");
                 eventHub.$emit("notifyUser", "You are not currently logged-in!");
             }
         },

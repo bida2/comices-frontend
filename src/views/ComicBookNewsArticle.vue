@@ -1,6 +1,7 @@
 <template>
     <div class="newsArticle">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="article != null && article != undefined">
             <Notifications></Notifications>
             <v-row justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -27,11 +28,12 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import Router from 'vue-router'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        article: {},
+        article: null,
         valid: false,
         headers: new Headers(),
         accessTokenEncoded: '',
@@ -52,6 +54,15 @@ export default {
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
+     watch: {
+        article() {
+             if (this.article) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the news article!");
+            }
+        }
+    },
     methods: {
         giveThumbs(ratingType, annId, headers) {
             fetch('http://localhost:8080/rateArticle?u=' + this.loggedInUser.sub + '&aId=' + annId + "&r=" + ratingType, {
@@ -70,7 +81,8 @@ export default {
         },
     },
     components: {
-        "Notifications": Notifications
+        "Notifications": Notifications,
+        "StatusAlerts": StatusAlerts
     }
 }
 </script>

@@ -1,7 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="reviews">
-        <v-container fluid class="text-center my-1">
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="announcement != null && announcement != undefined" fluid class="text-center my-1">
            <Notifications></Notifications>
             <v-layout row wrap>
                 <v-row class="mb-xl-3">
@@ -21,7 +21,6 @@
                     </v-col>
                 </v-row>
             </v-layout>
-            <!-- Contains admin actions bar -->
             <div v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" class="text-center mb-xl-2">
                 <v-btn class="mb-lg-2" icon depressed :to="'/editAnnouncement?aId=' + announcement.annId" color="warning">
                     <v-icon>mdi-pen</v-icon>
@@ -33,10 +32,11 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        announcement: {},
+        announcement: null,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -56,6 +56,15 @@ export default {
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
     },
+    watch: {
+        announcement() {
+             if (this.announcement) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the announcement!");
+            }
+        }
+    },
     methods: {
         // Rating type can be "Up" or "Down" 
         giveThumbs(ratingType, annId, headers) {
@@ -69,14 +78,14 @@ export default {
                 })
                 .then(async function(message) {
                     this.announcement = await getResourceJson('http://localhost:8080/getAnnouncement?aId=' + this.$route.query.aId);
-                   // this.toggleAlert(message)
                    eventHub.$emit("notifyUser", message);
                 }.bind(this))
         },
 
     },
     components: {
-        "Notifications": Notifications
+        "Notifications": Notifications,
+        "StatusAlerts": StatusAlerts
     }
 }
 </script>
