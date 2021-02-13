@@ -1,7 +1,7 @@
 <template>
     <div class="searchTags">
         <StatusAlerts></StatusAlerts>
-        <v-container class="text-center" v-if="tags != null && tags != undefined">
+        <v-container class="text-center" v-if="resourceLoaded == true && (tags != null && tags != undefined)">
             <Notifications></Notifications>
             <h3 v-if="tags.length > 0" class="text-center primary--text mt-xl-5 mb-xl-4 font-weight-light">Search Tags - Click To Search!</h3>
             <v-row v-if="tags" justify="center">
@@ -20,10 +20,11 @@ import { getResourceJson } from '@/common.js'
 export default {
     data: () => ({
         tags: null,
+        resourceLoaded: false,
         valid: false,
     }),
     mounted: async function() {
-        this.tags = await getResourceJson("http://localhost:8080/getTags").catch(e => {this.tags = undefined;});
+        this.tags = await getResourceJson("http://localhost:8080/getTags");
     },
     watch: {
         tags() {

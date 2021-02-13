@@ -1,8 +1,6 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="addVideoMaterial">
         <v-container>
-           <!-- v-snackbar-based notifications - can be multiple v-snackbars instead of just one -->
             <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -50,10 +48,7 @@ export default {
     }),
     methods: {
         submitVideo(headers) {
-            // this needs to be added to all Vue components with v-form tags in them that submit info to the server
-            // also, the forms need to have a ref attribute with a value and also no "lazy-validation" attribute on them
             if (!this.$refs.videoform.validate()) {
-                //this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -69,13 +64,11 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit('notifyUser', message);
                         if (!message.includes("already exists"))
                             this.$refs.videoform.reset();
                     }.bind(this))
             } else {
-                //this.toggleAlert("Access denied! Cannot submit new video material!");
                 eventHub.$emit('notifyUser', "Access denied! Cannot submit new video material!");
             }
 

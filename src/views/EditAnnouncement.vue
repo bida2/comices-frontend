@@ -1,7 +1,7 @@
 <template>
     <div id="my-cont" class="editAnnouncement">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="announcement != null && announcement != undefined">
+        <v-container v-if="resourceLoaded == true && (announcement != null && announcement != undefined)">
             <Notifications></Notifications>
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -31,6 +31,7 @@ export default {
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
+        resourceLoaded: false,
         annTitleRules: [
             notEmpty
         ],
@@ -70,8 +71,11 @@ export default {
                 this.announcement.annTitle = updatedText;
             else this.announcement.annContent = updatedText;
         });
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
-       watch: {
+    watch: {
         announcement() {
             if (this.announcement) {
                 eventHub.$emit('changeStatusAlert', false, null, null);

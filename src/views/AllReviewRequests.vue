@@ -1,9 +1,9 @@
 <template>
     <div class="allReviewRequests">
-        <h3 class="text-center primary--text font-weight-light">Comic Review Requests</h3>
-        <v-container fluid class="text-center my-5">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (reviewRequests != null && reviewRequests != undefined)">
+            <h3 class="text-center primary--text font-weight-light">Comic Review Requests</h3>
             <Notifications></Notifications>
-            <StatusAlerts></StatusAlerts>
             <v-layout row wrap class="justify-flex-space-evenly">
                 <v-flex xs5 lg3 xl2 class="comics-margin" v-for="reviewRequest in reviewRequests" :key="reviewRequest.requestId">
                     <v-row>
@@ -60,10 +60,11 @@ import Notifications from '@/components/Notifications.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        reviewRequests: [],
+        reviewRequests: null,
         loaded: false,
         accessTokenEncoded: '',
         headers: new Headers(),
+        resourceLoaded: false,
         loggedInUser: '',
         csrfToken: '',
         accessTokenDecoded: null,
@@ -78,25 +79,25 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading */
+        readyHandler(); 
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
             this.loggedInUser = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         reviewRequests() {
-            if (this.reviewRequests.length > 0) {
-                setTimeout(() => {
-                    // delay event in order to prevent the Granting Access message from flashing on screen
+            if (!this.reviewRequests) {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the review requests!");
+            }
+            else if (this.reviewRequests.length > 0) {
                     eventHub.$emit('changeStatusAlert', false, null, null);
-                }, 1000);
             } else if (this.reviewRequests.length === 0) {
-                setTimeout(() => {
-                    // delay event in order to prevent the Granting Access message from flashing on screen
-                    eventHub.$emit('changeStatusAlert', false, null, "No review requests! Get some users to write them!");
-                }, 1000);
+                eventHub.$emit('changeStatusAlert', false, null, "No review requests! Get some users to write them!");
             }
         }
     },

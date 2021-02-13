@@ -1,9 +1,9 @@
 <template>
     <div class="userSuggested">
-        <h3 class="text-center primary--text font-weight-light">Comics You Suggested</h3>
-        <v-container fluid class="text-center my-5">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (suggestedComics != null && suggestedComics != undefined)">
+            <h3 class="text-center primary--text font-weight-light">Comics You Suggested</h3>
            <Notifications></Notifications>
-            <StatusAlerts></StatusAlerts>
             <v-layout row wrap>
             <v-card v-for="comic in suggestedComics" :key="comic.comicId" class="mx-auto" max-width="300">
                 <v-hover v-slot="{ hover }">
@@ -50,9 +50,10 @@ import Notifications from '@/components/Notifications.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken } from '@/common.js'
 export default {
     data: () => ({
-        suggestedComics: [],
+        suggestedComics: null,
         accessTokenEncoded: '',
         headers: new Headers(),
+        resourceLoaded: false,
         loggedInUser: '',
         csrfToken: '',
         accessTokenDecoded: null,
@@ -62,7 +63,10 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
             this.loggedInUser = null;
-        }.bind(this))
+        }.bind(this));
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -73,9 +77,12 @@ export default {
     },
     watch: {
         suggestedComics() {
-            if (this.suggestedComics.length > 0 && document.readyState === "complete") {
+            if (!this.suggestedComics) {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the suggested comics!");
+            }
+            else if (this.suggestedComics.length > 0) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
-            } else if (this.suggestedComics.length === 0 && document.readyState === "complete") {
+            } else if (this.suggestedComics.length === 0) {
                 eventHub.$emit('changeStatusAlert', false, null, "No suggested comics! Visit the \"Suggest a Comic\" page in the sidebar!");
             }
         }
@@ -96,6 +103,9 @@ export default {
                 }).then(function(myJson) {
                     this.suggestedComics = myJson;
                 }.bind(this))
+                .catch(() => {
+                    this.suggestedComics = undefined;
+                })
         },
         addToComics(suggestedComicId, headers) {
             if (this.accessTokenDecoded !== null && this.accessTokenDecoded.groups.includes('admins')) {

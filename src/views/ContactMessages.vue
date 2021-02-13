@@ -1,8 +1,8 @@
 <template>
     <div class="userSuggested">
-        <h3 class="text-center primary--text font-weight-light">User Contact Messages</h3>
-        <v-container fluid class="text-center my-5">
-            <StatusAlerts></StatusAlerts>
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (contactMessages != null && contactMessages != undefined)">
+            <h3 class="text-center primary--text font-weight-light">User Contact Messages</h3>
            <Notifications></Notifications>
             <v-layout row wrap class="justify-flex-space-evenly">
                 <v-flex xs5 lg3 xl2 class="comics-margin" v-for="contactMessage in contactMessages" :key="contactMessage.contactId">
@@ -32,7 +32,6 @@
                                         <v-col class="text-center">
                                             <v-container class="pa-0">
                                                 <v-row>
-                                                    <!-- Functions need to replaced and reworked below - we need a function to respond to a contact message at least and to ignore a contact message as (delete it on backend) -->
                                                     <v-col v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')">
                                                         <v-btn @click="removeContactMessage(contactMessage.contactId, headers)" icon>
                                                             <v-icon>mdi-close-circle</v-icon>
@@ -63,9 +62,10 @@ import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJsonWithHeaders } from '@/common.js'
 export default {
     data: () => ({
-        contactMessages: [],
+        contactMessages: null,
         accessTokenEncoded: '',
         headers: new Headers(),
+        resourceLoaded: false,
         loggedInUser: '',
         csrfToken: '',
         accessTokenDecoded: null,
@@ -76,10 +76,16 @@ export default {
             this.accessTokenDecoded = null;
             this.loggedInUser = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         contactMessages: function() {
-            if (this.contactMessages.length > 0) {
+            if (!this.contactMessages) {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the contact messages!");
+            }
+            else if (this.contactMessages.length > 0) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
             } else if (this.contactMessages.length === 0) {
                 eventHub.$emit('changeStatusAlert', false, null, "No contact messages! Get some users to write them!");

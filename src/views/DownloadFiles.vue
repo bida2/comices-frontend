@@ -1,7 +1,7 @@
 <template>
     <div class="assetUploader">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="(accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')) && (files != null && files != undefined)">
+        <v-container v-if="resourceLoaded == true && (accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')) && (files != null && files != undefined)">
             <Notifications></Notifications>
             <h3 class="text-center primary--text mt-xl-5 mb-xl-4 font-weight-light">Download Uploaded Files</h3>
             <v-row v-for="(file, filename) in files" justify="center" :key="filename">
@@ -27,6 +27,7 @@ export default {
         files: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
     }),
@@ -75,6 +76,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());

@@ -1,8 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="reviews">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center my-1" v-if="reviews != null && reviews != undefined">
+        <v-container fluid class="text-center my-1" v-if="resourceLoaded == true && (reviews != null && reviews != undefined)">
             <AnnouncementDialog></AnnouncementDialog>
             <h2 class="text-center primary--text font-weight-light mb-xl-8">Reviews</h2>
             <div v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" class="text-left mb-xl-0 ml-xl-9">
@@ -59,6 +58,7 @@ export default {
         reviews: null,
         loading: true,
         accessTokenEncoded: null,
+        resourceLoaded: false,
         accessTokenDecoded: null,
         headers: new Headers(),
         csrfToken: '',
@@ -76,6 +76,9 @@ export default {
         };
         document.addEventListener('readystatechange', readyHandler);
         readyHandler();
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         reviews() {

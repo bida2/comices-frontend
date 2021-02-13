@@ -1,7 +1,7 @@
 <template>
     <div class="reviews">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="announcement != null && announcement != undefined" fluid class="text-center my-1">
+        <v-container v-if="resourceLoaded == true && (announcement != null && announcement != undefined)" fluid class="text-center my-1">
            <Notifications></Notifications>
             <v-layout row wrap>
                 <v-row class="mb-xl-3">
@@ -39,6 +39,7 @@ export default {
         announcement: null,
         headers: new Headers(),
         accessTokenEncoded: '',
+        resourceLoaded: false,
         accessTokenDecoded: null,
         loggedInUser: null,
     }),
@@ -46,7 +47,10 @@ export default {
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
-        }.bind(this))
+        }.bind(this));
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.announcement = await getResourceJson('http://localhost:8080/getAnnouncement?aId=' + this.$route.query.aId);

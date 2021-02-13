@@ -1,6 +1,7 @@
 <template>
     <div class="videoMaterials">
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="resourceLoaded == true && (videos != null && videos != undefined)">
             <h1 class="text-center primary--text font-weight-bold">Video Materials</h1>
             <Notifications></Notifications>
             <v-row justify="center" v-for="video in videos.content" :key="video.vMaterialId">
@@ -35,21 +36,36 @@
 <script>
 import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
+import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        videos: [],
+        videos: null,
         valid: false,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
+        resourceLoaded: false
     }),
     created: async function() {
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
+    watch: {
+        videos() {
+            if (this.videos) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the videos!");
+            }
+        }
+    }
+    ,
     mounted: async function() {
         this.videos = await getResourceJson('http://localhost:8080/getVideoPage');
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -69,18 +85,17 @@ export default {
                         return response.text()
                     })
                     .then(async function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit('notifyUser', message);
                         this.videos = await getResourceJson('http://localhost:8080/getVideoPage');
                     }.bind(this))
             } else {
-                // this.toggleAlert("Cannot delete comic!")
                 eventHub.$emit('notifyUser', "Cannot delete comic!");
             }
         }
     },
     components: {
-        'Notifications': Notifications
+        'Notifications': Notifications,
+        'StatusAlerts': StatusAlerts
     }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
     <div class="suggestComic">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="suggestion != null && suggestion != undefined">
+        <v-container v-if="resourceLoaded == true && (suggestion != null && suggestion != undefined)">
          <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -47,6 +47,7 @@ export default {
         modal: false,
         valid: false,
         suggestion: null,
+        resourceLoaded: false,
         headers: new Headers(),
         csrfToken: '',
         accessTokenEncoded: '',
@@ -108,6 +109,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.suggestion = await getResourceJson('http://localhost:8080/getSuggestion?id=' + this.$route.query.suggid);

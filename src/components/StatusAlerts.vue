@@ -32,10 +32,13 @@ export default {
         loading: true,
     }),
     mounted: function() {
-        eventHub.$on('changeStatusAlert', (isPageLoading, isUserLoggedIn, message) => {
-            this.loading = isPageLoading;
-            this.noResourceMessage = message;
-            this.userStatus = isUserLoggedIn;
+        eventHub.$on('changeStatusAlert', (isPageLoading, isUserLoggedIn, message, delay = 1000) => {
+            setTimeout(() => {
+                this.loading = isPageLoading;
+                this.noResourceMessage = message;
+                this.userStatus = isUserLoggedIn;
+                eventHub.$emit("resourceLoaded", true);
+            }, delay);
         })
     },
 }

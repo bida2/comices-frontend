@@ -1,7 +1,7 @@
 <template>
     <div class="editComic">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="article != null & article != undefined">
+        <v-container v-if="resourceLoaded == true && (article != null & article != undefined)">
             <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -34,6 +34,7 @@ export default {
         article: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         csrfToken: '',
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -73,6 +74,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         article() {

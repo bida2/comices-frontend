@@ -1,7 +1,7 @@
 <template>
     <div class="editComic">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="comic != null && comic != undefined">
+        <v-container v-if="resourceLoaded == true && (comic != null && comic != undefined)">
             <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -42,6 +42,7 @@ export default {
         releaseStatus: [{ text: 'Upcoming', value: 'upcoming' }, { text: 'Released', value: 'released' }, { text: 'Classic', value: 'classic' }],
         headers: new Headers(),
         csrfToken: '',
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
         comicNameRules: [
@@ -112,6 +113,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.comic = await getResourceJson('http://localhost:8080/getComicSummary?cId=' + this.$route.query.cId);

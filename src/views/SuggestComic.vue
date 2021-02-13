@@ -1,7 +1,7 @@
 <template>
     <div class="suggestComic">
-        <v-container>
-            <StatusAlerts></StatusAlerts>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="resourceLoaded == true">
            <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && loading === false" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -53,6 +53,7 @@ export default {
         csrfToken: '',
         accessTokenEncoded: '',
         accessTokenDecoded: null,
+        resourceLoaded: false,
         comicNameRules: [
             comicBookName,
             notEmpty
@@ -118,11 +119,14 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading
+        readyHandler(); 
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());

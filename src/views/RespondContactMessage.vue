@@ -1,7 +1,7 @@
 <template>
     <div class="responseContact">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="cMessage != '' && cMessage != undefined">
+        <v-container v-if="resourceLoaded == true && (cMessage != '' && cMessage != undefined)">
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
                     <p>You are responding to a message from <b>{{ cMessage.contactEmail }}</b></p>
@@ -55,6 +55,7 @@ export default {
         origUrlVisible: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
+        resourceLoaded: false,
         emailRules: [
             notEmpty,
             validEmail
@@ -104,6 +105,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());

@@ -1,8 +1,7 @@
-<!-- Alerts implementation exchanged for new v-snackbar implementation with multiple v-snackbars at a time - 11/28/2020 -->
 <template>
     <div class="reviews">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center my-1" v-if="review != null & review != undefined">
+        <v-container fluid class="text-center my-1" v-if="resourceLoaded == true && (review != null & review != undefined)">
             <Notifications></Notifications>
             <v-layout row wrap>
                 <v-row class="mb-xl-3">
@@ -38,10 +37,16 @@ export default {
     data: () => ({
         review: null,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
         loggedInUser: null,
     }),
+    created: function() {
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
+    },
     mounted: async function() {
         this.review = await getResourceJson('http://localhost:8080/getReview?rId=' + this.$route.query.rId);
         this.loggedInUser = await this.$auth.getUser();

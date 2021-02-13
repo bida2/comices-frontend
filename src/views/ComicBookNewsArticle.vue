@@ -1,7 +1,7 @@
 <template>
     <div class="newsArticle">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="article != null && article != undefined">
+        <v-container v-if="resourceLoaded == true && (article != null && article != undefined)">
             <Notifications></Notifications>
             <v-row justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -36,6 +36,7 @@ export default {
         article: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         loggedInUser: null,
         accessTokenDecoded: null,
@@ -45,6 +46,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.article = await getResourceJson('http://localhost:8080/getNewsArticle?aId=' + this.$route.query.aId);
@@ -75,7 +79,6 @@ export default {
                 })
                 .then(async function(message) {
                     this.article = await getResourceJson('http://localhost:8080/getNewsArticle?aId=' + this.$route.query.aId);
-                    // this.toggleAlert(message);
                     eventHub.$emit("notifyUser", message);
                 }.bind(this))
         },

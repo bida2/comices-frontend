@@ -1,7 +1,7 @@
 <template>
     <div class="forumPost">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="posts != null && posts != undefined">
+        <v-container v-if="resourceLoaded == true && (posts != null && posts != undefined)">
             <Notifications></Notifications>
             <v-row>
                 <v-col v-if="posts[0].status != 400" cols="12" md="6" lg="12" xl="12">
@@ -53,6 +53,7 @@ export default {
         posts: null,
         valid: false,
         fullyLoaded: false,
+        resourceLoaded: false,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -84,7 +85,6 @@ export default {
                         return response.json();
                     }).then(function(jsonResponse) {
                         if (typeof jsonResponse === "string")
-                            // this.toggleAlert(jsonResponse);
                             eventHub.$emit("notifyUser", jsonResponse);
                         else this.posts = jsonResponse;
                     }.bind(this))
@@ -126,6 +126,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.posts = await getResourceJson('http://localhost:8080/getPosts?tId=' + this.$route.query.tId);

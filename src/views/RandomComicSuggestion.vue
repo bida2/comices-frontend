@@ -3,7 +3,7 @@
         <v-container>
             <Notifications></Notifications>
             <!-- This is here in order to prevent endless loader spinning and show the user a message when retrieving a random comic has failed
-             This needs to be on pretty much every page -->
+                Use the StatusAlerts component in the future -->
             <v-row v-if="!showLoader && comic === undefined" no-gutters class="d-flex justify-center text-center">
                 <v-col cols="12" md="3" lg="5" xl="5">
                     <h3>Something went wrong!</h3>
@@ -155,14 +155,14 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading
+        readyHandler(); 
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
     },
     mounted: async function() {
-        this.comic = await getResourceJson('http://localhost:8080/getRandComic').catch((err) => { console.error(err); });
+        this.comic = await getResourceJson('http://localhost:8080/getRandComic');
         this.comments = await getResourceJson('http://localhost:8080/getComments?cId=' + this.comic.comicId);
         this.loggedInUser = await this.$auth.getUser();
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -180,17 +180,13 @@ export default {
         },
         async getRandComic() {
             this.showLoader = true;
-            this.comic = await getResourceJson('http://localhost:8080/getRandComic').catch((err) => {
-                console.error(err);
-                console.log(this.comic);
-            });
+            this.comic = await getResourceJson('http://localhost:8080/getRandComic');
             setTimeout(function() {
                 this.showLoader = false;
             }.bind(this), 3000);
         },
         postComment(headers) {
             if (!this.$refs.commentform.validate()) {
-                // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -203,11 +199,9 @@ export default {
             }).then(function(response) {
                 return response.text();
             }).then(async function(respText) {
-                //  this.toggleAlert(respText);
                 eventHub.$emit("notifyUser", respText);
                 this.comments = await getResourceJson('http://localhost:8080/getComments?cId=' + this.comic.comicId);
             }.bind(this))
-            // form needs to be reset here somehow
             this.$refs.form.reset()
         },
         addToFavourites(comicId, headers) {
@@ -221,7 +215,6 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message)
                         eventHub.$emit("notifyUser", message);
                     }.bind(this))
             } else {
@@ -237,7 +230,6 @@ export default {
                     return responseText.text();
                 })
                 .then(async function(response) {
-                    // this.toggleAlert(response);
                     eventHub.$emit("notifyUser", response);
                     this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.$route.query.cId);
                 }.bind(this))

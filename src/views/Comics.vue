@@ -1,7 +1,7 @@
 <template>
     <div class="comics">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center" v-if="comics != null && comics != undefined">
+        <v-container fluid class="text-center" v-if="resourceLoaded == true && (comics != null && comics != undefined)">
             <h3 class="text-center primary--text  font-weight-light">{{ currSelected }} Comics</h3>
             <AnnouncementDialog></AnnouncementDialog>
             <ShareDialog></ShareDialog>
@@ -84,6 +84,7 @@ export default {
         comics: null,
         loading: true,
         loaded: false,
+        resourceLoaded: false,
         accessTokenEncoded: '',
         loggedInUser: null,
         currTimeout: null,
@@ -108,14 +109,17 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading
+        readyHandler();
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
-        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming')
+        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming');
         this.headers = new Headers({
             'X-XSRF-TOKEN': getToken()
         })
@@ -137,8 +141,6 @@ export default {
             this.accessTokenEncoded = await getEncodedAccessToken()
             this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded)
         },
-        // Add a check for checking if there is a logged in user - if not show a message that the app cannot identify the user
-        // Do this for all pages that allow adding favourite comics
         async addFavourite(comicId, headers) {
             if (this.loggedInUser !== null) {
                 fetch('http://localhost:8080/addFavourite?u=' + this.loggedInUser.sub + '&cId=' + comicId, {
@@ -174,7 +176,7 @@ export default {
                     })
                     .then(async function(message) {
                         eventHub.$emit('notifyUser', message);
-                        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming')
+                        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming');
                     }.bind(this))
             } else {
                 eventHub.$emit('notifyUser', "Cannot delete comic!");
@@ -188,7 +190,7 @@ export default {
         },
         async showChosenComicType(chosenType) {
             if (!this.loading && this.loaded) {
-                this.loading = true; 
+                this.loading = true;
                 this.loaded = false;
                 this.currSelected = chosenType;
             } else clearTimeout(this.currTimeout);

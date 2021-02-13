@@ -1,9 +1,9 @@
 <template>
     <div class="comics">
         <Notifications></Notifications>
-        <h3 class="text-center primary--text  font-weight-light">Comic Book News</h3>
-        <v-container fluid class="my-5">
-            <StatusAlerts></StatusAlerts>
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="my-5" v-if="resourceLoaded == true && (news != null && news != undefined)">
+            <h3 class="text-center primary--text  font-weight-light">Comic Book News</h3>
             <v-row justify="center" v-for="article in news.content" :key="article.newsId">
                 <v-col cols="12" md="6" xl="4">
                     <v-skeleton-loader :loading="loading" transition="slide-x-transition" type="card">
@@ -38,11 +38,12 @@ import Notifications from '@/components/Notifications.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, setUserToken, getResourceJson } from '@/common.js'
 export default {
     data: () => ({
-        news: [],
+        news: null,
         loading: true,
         loaded: false,
         announceCard: true,
         accessTokenEncoded: '',
+        resourceLoaded: false,
         loggedInUser: null,
         headers: '',
         accessTokenDecoded: null,
@@ -53,7 +54,10 @@ export default {
     },
     watch: {
         news() {
-            if (!this.news.empty) {
+            if (!this.news) {
+                eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the news articles!");
+            }
+            else if (!this.news.empty) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
             } else {
                 eventHub.$emit('changeStatusAlert', false, null, "No news articles available!");
@@ -75,7 +79,10 @@ export default {
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
-        }.bind(this))
+        }.bind(this));
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.news = await getResourceJson('http://localhost:9000/getAllNews');

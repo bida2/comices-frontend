@@ -1,7 +1,7 @@
 <template>
     <div class="editPost">
          <StatusAlerts></StatusAlerts>
-        <v-container v-if="post != null && post != undefined">
+        <v-container v-if="resourceLoaded == true && (post != null && post != undefined)">
             <Notifications></Notifications>
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -29,6 +29,7 @@ export default {
         post: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
         postRules: [
@@ -67,6 +68,9 @@ export default {
             if (type === "title")
                 this.post.postTitle = updatedText;
             else this.post.postContent = updatedText;
+        });
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
         });
     },
     watch: {

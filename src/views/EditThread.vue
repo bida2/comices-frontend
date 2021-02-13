@@ -1,7 +1,7 @@
 <template>
     <div class="editThread">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="thread != null && thread != undefined">
+        <v-container v-if="resourceLoaded == true && (thread != null && thread != undefined)">
             <Notifications></Notifications>
              <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -29,6 +29,7 @@ export default {
         thread: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
         threadTitleRules: [
@@ -77,6 +78,9 @@ export default {
             if (type === "title")
                 this.thread.threadTopic = updatedText;
             else this.thread.threadPosts[0].postContent = updatedText;
+        });
+          eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
         });
     },
     mounted: async function() {

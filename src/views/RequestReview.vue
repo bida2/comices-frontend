@@ -1,7 +1,7 @@
 <template>
     <div class="requestReview">
-        <v-container class="text-center">
-            <StatusAlerts></StatusAlerts>
+        <StatusAlerts></StatusAlerts>
+        <v-container class="text-center" v-if="resourceLoaded == true && loading == false">
             <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && loading === false" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -38,6 +38,7 @@ export default {
         csrfToken: '',
         accessTokenEncoded: '',
         accessTokenDecoded: null,
+        resourceLoaded: false,
         loading: true,
         comicNameRules: [
             comicBookName,
@@ -98,6 +99,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());

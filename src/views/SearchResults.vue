@@ -1,7 +1,7 @@
 <template>
     <div class="searchResults">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center my-5" v-if="comics != null && comics != undefined">
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (comics != null && comics != undefined)">
             <h3 class="text-center primary--text  font-weight-light">Search Results for "{{$route.query.f}}"</h3>
             <Notifications></Notifications>
             <ShareDialog></ShareDialog>
@@ -67,7 +67,7 @@ export default {
         loading: true,
         loaded: false,
         announceCard: true,
-        alerts: [],
+        resourceLoaded: false,
         accessTokenEncoded: '',
         loggedInUser: null,
         headers: '',
@@ -88,6 +88,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         comics() {

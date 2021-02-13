@@ -55,6 +55,9 @@
          }).then(function(myJson) {
              resource = myJson
              return resource
+         }).catch(() => {
+             resource = undefined;
+             return resource;
          })
  }
 
@@ -65,9 +68,12 @@
              headers
          })
          .then(function(response) {
-             return response.json()
+             return response.json();
          }).then(function(myJson) {
-             resource = myJson
-             return resource
+             resource = myJson;
+             return resource;
+         }).catch(() => {
+             resource = undefined;
+             return resource;
          })
  }

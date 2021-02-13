@@ -1,11 +1,11 @@
 <template>
     <div class="contact">
-        <h3 class="text-center primary--text  font-weight-light">Contact Us!</h3>
-        <v-container>
+        <StatusAlerts></StatusAlerts>
+        <v-container v-if="resourceLoaded == true && (loggedInUser != null && loggedInUser != undefined)">
+            <h3 class="text-center primary--text  font-weight-light">Contact Us!</h3>
             <Notifications></Notifications>
-            <StatusAlerts></StatusAlerts>
             <v-layout row wrap justify-center>
-                <v-flex v-if="loggedInUser !== null && loggedInUser !== undefined" xs11 md6 xl4>
+                <v-flex xs11 md6 xl4>
                     <v-form id="contact-form" @submit.prevent="submitServer" class="text-center" ref="contactform" v-model="valid">
                         <v-text-field type="text" name="contactTopic" v-model="form.topic" :counter="100" :rules="topicRules" label="Topic" required></v-text-field>
                         <v-text-field type="text" name="contactEmail" v-model="form.email" :rules="emailRules" label="E-mail" required></v-text-field>
@@ -36,6 +36,7 @@ export default {
         headers: new Headers(),
         loggedInUser: null,
         accessTokenEncoded: '',
+        resourceLoaded: false,
         valid: false,
         topicRules: [
             notEmpty,
@@ -52,6 +53,15 @@ export default {
             optionalValidUrl
         ]
     }),
+    watch: {
+        loggedInUser() {
+            if (this.loggedInUser) {
+                eventHub.$emit('changeStatusAlert', false, null, null);
+            } else {
+                eventHub.$emit('changeStatusAlert', false, null, 'Cannot access the contact form! Try again later!');
+            }
+        }
+    },
     methods: {
         submitServer() {
             if (!this.$refs.contactform.validate()) {
@@ -83,13 +93,15 @@ export default {
     },
     created: async function() {
         this.accessTokenEncoded = await getEncodedAccessToken();
-        this.loggedInUser = await this.$auth.getUser();
+        this.loggedInUser = await this.$auth.getUser().catch(() => {this.loggedInUser = undefined;});
         // second param is related to is page loading - user is retrieved so its not loading
         // third param is related to user status - if we pass null, then everything is fine, otherwise pass 'no user' or something like that
         // fourth param is the message we sent to the component - include null if we want no message
-        eventHub.$emit('changeStatusAlert', false, null, (this.loggedInUser === null || this.loggedInUser === undefined) ? 'Cannot access the contact form! Try again later!' : null);
         this.headers.append("USER-TOKEN", this.accessTokenEncoded);
         this.headers.append("X-XSRF-TOKEN", getToken());
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     components: {
         'StatusAlerts': StatusAlerts,

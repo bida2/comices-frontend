@@ -1,7 +1,7 @@
 <template>
     <div class="videoMaterials">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="video != null && video != undefined">
+        <v-container v-if="resourceLoaded == true && (video != null && video != undefined)">
        <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
@@ -28,9 +28,9 @@ export default {
         video: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
-        alerts: [],
         headerRules: [
             notEmpty
         ],
@@ -77,6 +77,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.video = await getResourceJson('http://localhost:8080/getVideo?vId=' + this.$route.query.vId);

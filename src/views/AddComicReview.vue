@@ -76,7 +76,6 @@ export default {
                         return response.text()
                     })
                     .then(function(message) {
-                        //this.toggleAlert(message);
                         eventHub.$emit('notifyUser', message);
                     }.bind(this))
             } else {

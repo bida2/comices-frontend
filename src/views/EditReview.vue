@@ -1,7 +1,7 @@
 <template>
     <div class="editPost">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="review != null && review != undefined">
+        <v-container v-if="resourceLoaded == true && (review != null && review != undefined)">
            <Notifications></Notifications>
             <FormatToolbar></FormatToolbar>
             <v-row v-if="accessTokenEncoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
@@ -29,6 +29,7 @@ export default {
         review: null,
         valid: false,
         headers: new Headers(),
+        resourceLoaded: false,
         accessTokenEncoded: '',
         accessTokenDecoded: null,
         reviewRules: [
@@ -70,6 +71,9 @@ export default {
             if (type === "title")
                 this.review.reviewTitle = updatedText;
             else this.review.reviewContent = updatedText;
+        });
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
         });
     },
     watch: {

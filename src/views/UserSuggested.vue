@@ -1,7 +1,7 @@
 <template>
     <div class="userSuggested">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center my-5" v-if="suggestedComics != null && suggestedComics != undefined">
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (suggestedComics != null && suggestedComics != undefined)">
             <h3 class="text-center primary--text font-weight-light" v-show="suggestedComics.length > 0">Comics You Suggested</h3>
            <Notifications></Notifications>
             <v-layout row wrap>
@@ -53,6 +53,7 @@ export default {
         suggestedComics: null,
         accessTokenEncoded: '',
         headers: new Headers(),
+        resourceLoaded: false,
         loggedInUser: '',
         csrfToken: '',
         accessTokenDecoded: null,
@@ -63,6 +64,9 @@ export default {
             this.accessTokenDecoded = null;
             this.loggedInUser = null;
         }.bind(this))
+         eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.headers.append('X-XSRF-TOKEN', getToken());
@@ -98,6 +102,7 @@ export default {
                 }).then(function(myJson) {
                     this.suggestedComics = myJson;
                 }.bind(this))
+                .catch(() => {this.suggestedComics = undefined;})
         },
         addToComics(suggestedComicId, headers) {
             if (this.accessTokenDecoded !== null && this.accessTokenDecoded.groups.includes('admins')) {

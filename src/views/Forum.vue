@@ -1,7 +1,7 @@
 <template>
     <div class="forums">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="threads != null && threads != undefined">
+        <v-container v-if="resourceLoaded == true && (threads != null && threads != undefined)">
             <Notifications></Notifications>
             <v-row>
                 <v-col cols="12" md="6" lg="12" xl="12">
@@ -45,6 +45,7 @@ export default {
     data: () => ({
         threads: null,
         fullyLoaded: false,
+        resourceLoaded: false,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -92,6 +93,9 @@ export default {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
         }.bind(this))
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         threads() {

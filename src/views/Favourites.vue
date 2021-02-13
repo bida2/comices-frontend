@@ -1,9 +1,9 @@
 <template>
     <div class="profile">
-        <h3 class="text-center primary--text font-weight-light">Favourite Comics</h3>
-        <v-container fluid class="text-center my-5">
+        <StatusAlerts></StatusAlerts>
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (favourites != null && favourites != undefined)">
+            <h3 class="text-center primary--text font-weight-light">Favourite Comics</h3>
             <Notifications></Notifications>
-            <StatusAlerts></StatusAlerts>
             <ShareDialog></ShareDialog>
             <v-layout row wrap class="justify-flex-space-evenly">
                 <v-flex xs5 lg3 xl2 class="left-margin-without-first" v-for="comic in favourites" :key="comic.comicId">
@@ -63,11 +63,12 @@ import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson
 import { mdiShareVariant } from '@mdi/js'
 export default {
     data: () => ({
-        favourites: [],
+        favourites: null,
         loaded: false,
         accessTokenEncoded: '',
         headers: new Headers(),
         loggedInUser: '',
+        resourceLoaded: false,
         csrfToken: '',
         accessTokenDecoded: null,
         icons: { 'share': mdiShareVariant }
@@ -82,16 +83,22 @@ export default {
             }
         };
         document.addEventListener('readystatechange', readyHandler);
-        readyHandler(); // in case the component has been instantiated lately after loading 
+        readyHandler();
         eventHub.$on('loggedOut', function() {
             this.accessTokenEncoded = undefined;
             this.accessTokenDecoded = null;
             this.loggedInUser = null;
         }.bind(this))
+          eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     watch: {
         favourites() {
-            if (this.favourites.length > 0) {
+            if (!this.favourites) {
+                eventHub.$emit('changeStatusAlert', false, null, 'Something went wrong with retrieving your favourite comics!');
+            }
+            else if (this.favourites.length > 0) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
             } else if (this.favourites.length === 0) {
                 eventHub.$emit('changeStatusAlert', false, null, 'No favourited comics! Visit the Upcoming page or Classics page to find comics!');
@@ -119,7 +126,6 @@ export default {
                     })
                     .then(async function(message) {
                         this.favourites = await getResourceJson('http://localhost:8080/getFavourites?u=' + this.loggedInUser.sub);
-                       // this.toggleAlert(message);
                        eventHub.$emit("notifyUser", message);
                     }.bind(this))
             }

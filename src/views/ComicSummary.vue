@@ -1,8 +1,8 @@
 <template>
     <div class="comicSummary">
         <StatusAlerts></StatusAlerts>
-        <v-container v-if="comic != null && comic != undefined">
-            <Notifications></Notifications>
+        <Notifications></Notifications>
+        <v-container v-if="resourceLoaded == true && (comic != null && comic != undefined)">
             <v-row no-gutters class="d-flex justify-center text-center">
                 <v-col cols="12" md="6" lg="6" xl="4">
                     <v-img class="grey darken-4" height="480" width="623" contain transition="slide-x-transition" :src="comic.comicCoverURL"></v-img>
@@ -114,11 +114,12 @@ export default {
         },
         comic: null,
         comicRating: {
-            rating: 0
+            rating: null
         },
-        comments: [],
+        comments: null,
         csrfToken: '',
         dialog: false,
+        resourceLoaded: false,
         headers: new Headers(),
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -137,7 +138,6 @@ export default {
         },
         postComment(headers) {
             if (!this.$refs.commentform.validate()) {
-                // this.toggleAlert("Data is missing or in an incorrect format! Please review your entered data and try again!");
                 eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
@@ -150,12 +150,10 @@ export default {
             }).then(function(response) {
                 return response.text();
             }).then(async function(respText) {
-                // this.toggleAlert(respText);
                 eventHub.$emit("notifyUser", respText);
                 this.comic = await getResourceJson('http://localhost:8080/getComicSummary?cId=' + this.$route.query.cId);
                 this.comments = await getResourceJson('http://localhost:8080/getComments?cId=' + this.$route.query.cId);
             }.bind(this))
-            // form needs to be reset here somehow
             this.$refs.commentform.reset()
         },
         setRating(headers) {
@@ -167,11 +165,15 @@ export default {
                     return responseText.text();
                 })
                 .then(async function(response) {
-                    // this.toggleAlert(response);
                     eventHub.$emit("notifyUser", response);
                     this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.$route.query.cId);
                 }.bind(this))
         }
+    },
+    created: function() {
+        eventHub.$on("resourceLoaded", (resourceLoaded) => {
+            this.resourceLoaded = resourceLoaded;
+        });
     },
     mounted: async function() {
         this.comic = await getResourceJson('http://localhost:8080/getComicSummary?cId=' + this.$route.query.cId);
@@ -189,6 +191,14 @@ export default {
             } else {
                 eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comic!");
             }
+        },
+        comments() {
+            if (!this.comments)
+                eventHub.$emit('notifyUser', "Something went wrong with retrieving the comments!");
+        },
+        comicRating() {
+            if (!this.comicRating) 
+                eventHub.$emit('notifyUser', "Something went wrong with retrieving your comic rating!");
         }
     },
     components: {
