@@ -39,7 +39,7 @@ export default {
     data: () => ({
         comic: null,
         valid: false,
-        releaseStatus: [{ text: 'Upcoming', value: 'upcoming' }, { text: 'Released', value: 'released' }, { text: 'Classic', value: 'classic' }],
+        releaseStatus: [{ text: 'Upcoming', value: 'UPCOMING' }, { text: 'Released', value: 'RELEASED' }, { text: 'Classic', value: 'CLASSIC' }],
         headers: new Headers(),
         csrfToken: '',
         resourceLoaded: false,

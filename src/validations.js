@@ -1,5 +1,5 @@
 /* Variables that the functions below will need */
-let acceptedReleaseStatus = ["upcoming", "classic", "released"];
+const acceptedReleaseStatus = ["UPCOMING", "CLASSIC", "RELEASED"];
 
 
 

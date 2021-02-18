@@ -8,6 +8,7 @@
                     <h3 class="text-center primary--text mt-xl-5 font-weight-light">Suggest A Comic</h3>
                     <v-form id="comic-form" @submit.prevent="submitComic(headers)" ref="suggestcomicform" class="text-center" v-model="valid">
                         <v-text-field name="comicName" :rules="comicNameRules" label="Suggested Comic Name" required></v-text-field>
+                        <v-select name="releaseStatus" :items="releaseStatus" :rules="releaseStatusRules"  label="Release Status" dense required></v-select>
                         <v-text-field name="authorName" :rules="authorRules" label="Suggested Author Name" required></v-text-field>
                         <v-text-field name="buyURL" :rules="urlRules" label="URL To Buy Comic" required></v-text-field>
                         <v-text-field type="number" :rules="priceRules" name="price" label="Comic Price" required></v-text-field>
@@ -42,7 +43,7 @@ import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import StatusAlerts from '@/components/StatusAlerts.vue'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken } from '@/common.js'
-import { onlyLetters, onlyIntegerAndFloatNumbers, notEmpty, validUrl, comicBookName } from '@/validations.js'
+import { onlyLetters, onlyIntegerAndFloatNumbers, notEmpty, validUrl, comicBookName, onlyAcceptedReleaseStatus } from '@/validations.js'
 export default {
     data: () => ({
         date: new Date().toISOString().substr(0, 10),
@@ -50,6 +51,7 @@ export default {
         valid: false,
         headers: new Headers(),
         loading: true,
+        releaseStatus: [{ text: 'Upcoming', value: 'UPCOMING' }, { text: 'Released', value: 'RELEASED' }, { text: 'Classic', value: 'CLASSIC' }],
         csrfToken: '',
         accessTokenEncoded: '',
         accessTokenDecoded: null,
@@ -72,6 +74,10 @@ export default {
         priceRules: [
             onlyIntegerAndFloatNumbers,
             notEmpty
+        ],
+        releaseStatusRules: [
+            notEmpty,
+            onlyAcceptedReleaseStatus
         ]
     }),
     watch: {

@@ -119,7 +119,8 @@ export default {
         });
     },
     mounted: async function() {
-        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming');
+        // Default is always Upcoming comics
+        this.comics = await getResourceJson('http://localhost:8080/comicType?t=UPCOMING');
         this.headers = new Headers({
             'X-XSRF-TOKEN': getToken()
         })
@@ -176,7 +177,7 @@ export default {
                     })
                     .then(async function(message) {
                         eventHub.$emit('notifyUser', message);
-                        this.comics = await getResourceJson('http://localhost:8080/comicType?t=upcoming');
+                        this.comics = await getResourceJson('http://localhost:8080/comicType?t=' + this.currSelected.toUpperCase());
                     }.bind(this))
             } else {
                 eventHub.$emit('notifyUser', "Cannot delete comic!");
@@ -194,7 +195,7 @@ export default {
                 this.loaded = false;
                 this.currSelected = chosenType;
             } else clearTimeout(this.currTimeout);
-            this.comics = await getResourceJson("http://localhost:8080/comicType?t=" + chosenType);
+            this.comics = await getResourceJson("http://localhost:8080/comicType?t=" + chosenType.toUpperCase());
             this.currTimeout = setTimeout(() => {
                 this.loading = false;
                 this.loaded = true;
