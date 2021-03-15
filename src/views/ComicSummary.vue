@@ -103,7 +103,6 @@ import eventHub from '@/main.js'
 import Notifications from '@/components/Notifications.vue'
 import BarChart from '@/components/BarChart.vue'
 import StatusAlerts from '@/components/StatusAlerts.vue'
-import Router from 'vue-router'
 import { getToken, getEncodedAccessToken, getDecodedAccessToken, getResourceJson } from '@/common.js'
 import { notEmpty, commenterNameLength } from '@/validations.js'
 export default {

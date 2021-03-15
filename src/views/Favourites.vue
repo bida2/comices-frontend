@@ -1,7 +1,7 @@
 <template>
     <div class="profile">
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (favourites != null && favourites != undefined)">
+        <v-container fluid class="text-center my-5" v-if="resourceLoaded == true && (favourites != null && favourites != undefined && favourites.length > 0)">
             <h3 class="text-center primary--text font-weight-light">Favourite Comics</h3>
             <Notifications></Notifications>
             <ShareDialog></ShareDialog>
@@ -101,7 +101,7 @@ export default {
             else if (this.favourites.length > 0) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
             } else if (this.favourites.length === 0) {
-                eventHub.$emit('changeStatusAlert', false, null, 'No favourited comics! Visit the Upcoming page or Classics page to find comics!');
+                eventHub.$emit('changeStatusAlert', false, null, 'No favourited comics! Visit the Comics page to find comics!');
             }
         }
     },

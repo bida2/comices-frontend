@@ -33,7 +33,7 @@
                     <p><span class="mr-xl-0">{{ comic.price }}</span>
                         <v-dialog v-model="dialog" width="500">
                             <template v-slot:activator="{ on: dialog }">
-                                <v-btn class="ml-xl-0" v-on="{...tooltip, ...dialog}" icon color="black">
+                                <v-btn class="ml-xl-0" v-on="{...dialog}" icon color="black">
                                     <v-icon class="pb-xl-1" color="info" size="23">mdi-history</v-icon>
                                 </v-btn>
                             </template>
@@ -63,6 +63,7 @@
                         <v-col>
                             <v-btn class="mb-lg-2 mb-xl-0 ml-lg-2" depressed color="success"><a class="white--text no-deco-link" :href="comic.buyURL">Buy Comicbook</a></v-btn>
                             <v-btn class="ml-lg-2 ml-xl-2 mt-3 mt-lg-0 mt-xl-0 mt-md-0 mt-sm-0 mb-3 mb-sm-0 mb-md-0 mb-lg-0 mb-xl-0 white--text no-deco-link" router to="/" depressed color="red">Back to Comics</v-btn>
+                            <v-btn class="ml-lg-2 ml-xl-2 mt-3 mt-lg-0 mt-xl-0 mt-md-0 mt-sm-0 mb-3 mb-sm-0 mb-md-0 mb-lg-0 mb-xl-0 white--text no-deco-link" @click="getRandComic" depressed color="info">New Random Comic</v-btn>
                         </v-col>
                     </v-row>
                 </v-col>
@@ -84,6 +85,7 @@
                 <v-col cols="12" md="6" lg="12" xl="12">
                     <v-divider class="mt-xl-8 mt-lg-8"></v-divider>
                 </v-col>
+
                 <v-col v-if="accessTokenDecoded !== null" cols="12" md="6" lg="12" xl="12" class="d-flex justify-center mt-2">
                     <v-form id="comment-form" @submit.prevent="postComment(headers)" class="text-center mx-auto flex-basis-33" ref="commentform" v-model="valid">
                         <v-text-field type="text" name="commenterName" v-model="form.name" :counter="25" :rules="nameRules" label="Nickname" required></v-text-field>
@@ -122,7 +124,7 @@ export default {
             name: '',
             content: ''
         },
-        comments: [],
+        comments: null,
         comicRating: {
             rating: 0
         },
@@ -169,6 +171,13 @@ export default {
         this.accessTokenEncoded = await getEncodedAccessToken();
         this.accessTokenDecoded = getDecodedAccessToken(this.accessTokenEncoded);
         this.headers.append('USER-TOKEN', this.accessTokenEncoded);
+        this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.comic.comicId);
+    },
+    watch: {
+        comments() {
+            if (!this.comments)
+                eventHub.$emit('notifyUser', "Something went wrong with retrieving the comments!");
+        },
     },
     methods: {
         onResize() {
@@ -181,6 +190,8 @@ export default {
         async getRandComic() {
             this.showLoader = true;
             this.comic = await getResourceJson('http://localhost:8080/getRandComic');
+            this.comments = await getResourceJson('http://localhost:8080/getComments?cId=' + this.comic.comicId);
+            this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.comic.comicId);
             setTimeout(function() {
                 this.showLoader = false;
             }.bind(this), 3000);
@@ -231,7 +242,7 @@ export default {
                 })
                 .then(async function(response) {
                     eventHub.$emit("notifyUser", response);
-                    this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + this.$route.query.cId);
+                    this.comicRating = await getResourceJson('http://localhost:8080/getRating?u=' + this.accessTokenDecoded.sub + '&cId=' + comicId);
                 }.bind(this))
         }
     },

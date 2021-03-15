@@ -35,7 +35,7 @@ import { getToken, getEncodedAccessToken, getDecodedAccessToken } from '@/common
 import { onlyLetters, onlyIntegerAndFloatNumbers, notEmpty, validUrl, comicBookName } from '@/validations.js'
 export default {
     data: () => ({
-        releaseStatus: ['Upcoming', 'Released', 'Classic'],
+        releaseStatus: [{'text': 'Upcoming', 'value': 'UPCOMING'}, {'text': 'Released', 'value': 'RELEASED'}, {'text': 'Classic', 'value': 'CLASSIC'}],
         headers: new Headers(),
         csrfToken: '',
         classStatus: 'False',

@@ -2,7 +2,7 @@
     <div class="comics">
         <Notifications></Notifications>
         <StatusAlerts></StatusAlerts>
-        <v-container fluid class="my-5" v-if="resourceLoaded == true && (news != null && news != undefined)">
+        <v-container fluid class="my-5" v-if="resourceLoaded == true && (news != null && news != undefined && news.content.length > 0)">
             <h3 class="text-center primary--text  font-weight-light">Comic Book News</h3>
             <v-row justify="center" v-for="article in news.content" :key="article.newsId">
                 <v-col cols="12" md="6" xl="4">
