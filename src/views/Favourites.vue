@@ -6,7 +6,7 @@
             <Notifications></Notifications>
             <ShareDialog></ShareDialog>
             <v-layout row wrap class="justify-flex-space-evenly">
-                <v-flex xs5 lg3 xl2 class="left-margin-without-first" v-for="comic in favourites" :key="comic.comicId">
+                <v-flex xs12 lg3 xl2 class="favourites-margin" v-for="comic in favourites" :key="comic.comicId">
                     <v-skeleton-loader :loading="!loaded" transition="slide-x-transition" type="card">
                         <v-card max-width="344" v-show="loaded">
                             <v-row>

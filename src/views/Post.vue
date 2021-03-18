@@ -1,8 +1,8 @@
 <template>
     <div class="forumPost">
         <StatusAlerts></StatusAlerts>
+        <Notifications></Notifications>
         <v-container v-if="resourceLoaded == true && (posts != null && posts != undefined)">
-            <Notifications></Notifications>
             <v-row>
                 <v-col v-if="posts[0].status != 400" cols="12" md="6" lg="12" xl="12">
                     <v-card v-for="post in posts" :key="post.postId" class="mx-auto my-xl-2" max-width="600" outlined>

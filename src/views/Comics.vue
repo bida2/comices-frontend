@@ -1,11 +1,11 @@
 <template>
     <div class="comics">
         <StatusAlerts></StatusAlerts>
+        <Notifications></Notifications>
         <v-container fluid class="text-center" v-if="resourceLoaded == true && (comics != null && comics != undefined)">
             <h3 class="text-center primary--text  font-weight-light">{{ currSelected }} Comics</h3>
             <AnnouncementDialog></AnnouncementDialog>
             <ShareDialog></ShareDialog>
-            <Notifications></Notifications>
             <v-row>
                 <v-col cols="4" md="2" xl="1">
                     <v-btn @click="showAnnouncements" icon color="info">
@@ -20,7 +20,7 @@
                 </v-col>
             </v-row>
             <v-layout row wrap class="justify-flex-space-evenly">
-                <v-flex xs12 lg3 xl2 class="comics-margin" v-for="comic in comics" :key="comic.comicId">
+                <v-flex xs12 lg3 xl2 class="mt-3 comics-margin" v-for="comic in comics" :key="comic.comicId">
                     <v-skeleton-loader :loading="loading" transition="slide-x-transition" type="card">
                         <v-card max-width="344" v-show="!loading">
                             <v-row>
@@ -120,7 +120,7 @@ export default {
     },
     mounted: async function() {
         // Default is always Upcoming comics
-        this.comics = await getResourceJson('http://localhost:8080/comicType?t=UPCOMING');
+        this.comics = await this.getAndCheckComics();
         this.headers = new Headers({
             'X-XSRF-TOKEN': getToken()
         })
@@ -132,6 +132,7 @@ export default {
         comics() {
             if (this.comics) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
+                if (this.comics.length === 0) eventHub.$emit("notifyUser", "No comics found for chosen comic release status!");
             } else {
                 eventHub.$emit('changeStatusAlert', false, null, "Something went wrong with retrieving the comics!");
             }
@@ -177,7 +178,7 @@ export default {
                     })
                     .then(async function(message) {
                         eventHub.$emit('notifyUser', message);
-                        this.comics = await getResourceJson('http://localhost:8080/comicType?t=' + this.currSelected.toUpperCase());
+                        this.comics = await this.getAndCheckComics();
                     }.bind(this))
             } else {
                 eventHub.$emit('notifyUser', "Cannot delete comic!");
@@ -186,6 +187,12 @@ export default {
         openShareDialog(comicId) {
             eventHub.$emit("toggleShareDialog", this.comics.filter(comic => comic.comicId === comicId)[0]);
         },
+        async getAndCheckComics() {
+            let request = await getResourceJson('http://localhost:8080/comicType?t=' + this.currSelected.toUpperCase());
+            let comicStatus = request === undefined ? undefined : request.length > 0 ? request : [];
+            return comicStatus;
+        }
+        ,
         showAnnouncements() {
             eventHub.$emit("toggleAnnouncements");
         },
@@ -195,7 +202,7 @@ export default {
                 this.loaded = false;
                 this.currSelected = chosenType;
             } else clearTimeout(this.currTimeout);
-            this.comics = await getResourceJson("http://localhost:8080/comicType?t=" + chosenType.toUpperCase());
+            this.comics = await this.getAndCheckComics();
             this.currTimeout = setTimeout(() => {
                 this.loading = false;
                 this.loaded = true;

@@ -1,8 +1,8 @@
 <template>
     <div class="videoMaterials">
         <StatusAlerts></StatusAlerts>
+        <Notifications></Notifications>
         <v-container v-if="resourceLoaded == true && (video != null && video != undefined)">
-       <Notifications></Notifications>
             <v-row v-if="accessTokenDecoded !== null && accessTokenDecoded.groups.includes('admins')" justify="center">
                 <v-col cols="12" md="6" xl="4">
                     <h3 class="text-center primary--text mt-xl-5 font-weight-light">Edit A Video Material</h3>
@@ -46,7 +46,7 @@ export default {
     methods: {
         submitMaterial(headers) {
             if (!this.$refs.videoeditform.validate()) {
-              eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
+                eventHub.$emit("notifyUser", "Data is missing or in an incorrect format! Please review your entered data and try again!");
                 return;
             }
             const formElement = document.getElementById('video-form');
@@ -59,11 +59,11 @@ export default {
                 .then(function(response) {
                     return response.text()
                 }).then(function(jsonResponse) {
-                   eventHub.$emit("notifyUser", jsonResponse);
+                    eventHub.$emit("notifyUser", jsonResponse);
                 }.bind(this))
-        },
+        }
     },
-       watch: {
+    watch: {
         video() {
             if (this.video) {
                 eventHub.$emit('changeStatusAlert', false, null, null);
